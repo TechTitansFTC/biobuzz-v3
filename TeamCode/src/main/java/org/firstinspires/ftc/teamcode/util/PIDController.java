@@ -1,0 +1,69 @@
+package org.firstinspires.ftc.teamcode.util;
+
+public class PIDController {
+    private double kp; // Proportional gain
+    private double ki; // Integral gain
+    private double kd; // Derivative gain
+    private double kf; // Feedforward
+
+    private double target; // Setpoint
+    private double integral; // Integral term accumulation
+    private double previousError; // Previous error value
+
+    public PIDController(double kp, double ki, double kd, double kf) {
+        this.kp = kp;
+        this.ki = ki;
+        this.kd = kd;
+        this.kf = kf;
+        this.target = 0.0;
+        this.integral = 0.0;
+        this.previousError = 0.0;
+    }
+
+    public void setTarget(double target) {
+        this.target = target;
+    }
+
+    public void setConstants(double kp, double ki, double kd, double kf) {
+        this.kp = kp;
+        this.ki = ki;
+        this.kd = kd;
+        this.kf = kf;
+    }
+
+    public double getTarget() {
+        return target;
+    }
+
+    public double calculateOutput(double currentValue, double deltaTime) {
+        double error = target - currentValue;
+
+        if (deltaTime >= 0.5 || deltaTime <= 0) deltaTime = 0.001;
+
+        // Proportional term
+        double proportionalTerm = kp * error;
+
+        // Integral term
+        integral += error * deltaTime;
+        double integralTerm = ki * integral;
+
+        // Derivative term
+        double derivativeTerm = kd * ((error - previousError) / deltaTime);
+
+        // Feedforward term
+        double feedforwardTerm = 0;
+        if (currentValue - target < 0) {
+            feedforwardTerm = kf;
+        } else if (currentValue - target > 0) {
+            feedforwardTerm = -kf;
+        }
+
+        // Calculate the output value
+        double output = proportionalTerm + integralTerm + derivativeTerm + feedforwardTerm;
+
+        // Update previous error value
+        previousError = error;
+
+        return output;
+    }
+}
