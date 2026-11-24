@@ -1,31 +1,27 @@
 package org.firstinspires.ftc.teamcode.commands;
 
-import static org.firstinspires.ftc.teamcode.util.Constants.REVERSE_INTAKE_MOTOR_POWER;
-import static org.firstinspires.ftc.teamcode.util.Constants.REVERSE_TRANSFER_MOTOR_POWER;
-
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 
 public class ReverseCommand extends CommandBase {
+    public static double REVERSE_INTAKE_MOTOR_POWER = 1;
+
     private final IntakeSubsystem intakeSubsystem;
 
     public ReverseCommand(IntakeSubsystem intakeSubsystem) {
-        this.storageSubsystem = storageSubsystem;
         this.intakeSubsystem = intakeSubsystem;
 
-        addRequirements(storageSubsystem, intakeSubsystem);
+        addRequirements(intakeSubsystem);
     }
 
     @Override
     public void initialize() {
-        storageSubsystem.setTransferMotorPower(-REVERSE_TRANSFER_MOTOR_POWER);
         intakeSubsystem.setMotorPower(-REVERSE_INTAKE_MOTOR_POWER);
     }
 
     @Override
     public void end(boolean inturrupted) {
-        storageSubsystem.setTransferMotorPower(0);
         intakeSubsystem.setMotorPower(0);
     }
 }

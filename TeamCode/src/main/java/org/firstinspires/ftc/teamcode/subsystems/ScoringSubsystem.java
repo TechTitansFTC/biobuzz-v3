@@ -7,6 +7,7 @@ import android.util.Size;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -20,6 +21,7 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.util.PoseStorage;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagClusterDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -46,8 +48,11 @@ public class ScoringSubsystem extends SubsystemBase {
     private double filteredRpm = 0;
     private boolean firstShooterUpdate = true;
     private double targetMotorRPM = 0;
+    private double currX;
+    private double currY;
+    private double currHeading;
 
-    public ScoringSubsystem(HardwareMap hardwareMap, TelemetryManager telemetry, Follower follower) {
+    public ScoringSubsystem(HardwareMap hardwareMap, TelemetryManager telemetry) {
         this.telemetry = telemetry;
 
         rightPollenTurretMotor = hardwareMap.get(DcMotorEx.class, "rightPollenShooter");
@@ -60,6 +65,8 @@ public class ScoringSubsystem extends SubsystemBase {
         leftPollenTurretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightPollenTurretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         leftPollenTurretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        setPosition(PoseStorage.autonomousEndPose);
 
         if (RIGHT_POLLEN_TURRET_MOTOR_REVERSED) {
             rightPollenTurretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -90,6 +97,9 @@ public class ScoringSubsystem extends SubsystemBase {
         telemetry.addData("Camera bearing", getBearing());
         telemetry.addData("Pollen shooter RPM", getPollenShooterRPM());
         telemetry.addData("Pollen shooter target", getPollenShooterTargetRPM());
+        telemetry.addData("CurrX", getCurrX());
+        telemetry.addData("CurrY", getCurrY());
+        telemetry.addData("CurrHeading", getCurrHeading());
     }
 
     public void setPollenShooterTargetRPM(double target) { targetMotorRPM = target; }
@@ -178,5 +188,36 @@ public class ScoringSubsystem extends SubsystemBase {
             firstShooterUpdate = false;
         }
         filteredRpm += Range.clip(POLLEN_SHOOTER_RPM_FILTER, 0.01, 1) * (getPollenTurretMotorRawRPM() - filteredRpm);
+    }
+
+    public void setPosition(Pose position) { // x, y, heading
+        currX = position.x();
+        currY = position.y();
+        currHeading = convertHeading(Math.toDegrees(position.heading()));
+    }
+
+    public double getCurrX() {
+        return currX;
+    }
+
+    public double getCurrY() {
+        return currY;
+    }
+
+    public double getCurrHeading() {
+        return currHeading;
+    }
+
+    public double convertHeading(double beforeDegrees) {
+        double after = 90.0 - beforeDegrees;
+
+        while (after > 180.0) {
+            after -= 360.0;
+        }
+        while (after <= -180.0) {
+            after += 360.0;
+        }
+
+        return after;
     }
 }

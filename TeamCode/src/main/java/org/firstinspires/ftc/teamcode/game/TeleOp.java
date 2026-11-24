@@ -59,7 +59,7 @@ public class TeleOp extends OpMode {
         pollenScoringCommand = new PollenScoringCommand(scoringSubsystem, storageSubsystem, intakeSubsystem);
         intakeCommand = new IntakeCommand(storageSubsystem, intakeSubsystem);
         flowerIntakeCommand = new FlowerIntakeCommand(flowerSubsystem);
-        reverseCommand = new ReverseCommand(storageSubsystem, intakeSubsystem);
+        reverseCommand = new ReverseCommand(intakeSubsystem);
 
         // Bindings
         mecanumDriveSubsystem.setDefaultCommand(driveCommand);
