@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.commands;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 
+@Configurable
 public class ReverseCommand extends CommandBase {
     public static double REVERSE_INTAKE_MOTOR_POWER = 1;
 

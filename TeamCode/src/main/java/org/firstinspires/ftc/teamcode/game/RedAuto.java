@@ -1,44 +1,46 @@
 package org.firstinspires.ftc.teamcode.game;
 
 
-import static org.firstinspires.ftc.teamcode.util.Constants.APRIL_TAG_ALIGN_DETECTION_TIME;
-import static org.firstinspires.ftc.teamcode.util.Constants.AUTO_INTAKE_TIME;
-import static org.firstinspires.ftc.teamcode.util.Constants.FLOWER_RIGHT_SERVO_DOWN;
-import static org.firstinspires.ftc.teamcode.util.Constants.FLOWER_RIGHT_SERVO_UP;
-import static org.firstinspires.ftc.teamcode.util.Constants.INTAKE_MOTOR_POWER;
-import static org.firstinspires.ftc.teamcode.util.Constants.PARK_TIME;
-import static org.firstinspires.ftc.teamcode.util.Constants.SHOOTER_SPIN_UP_TIME;
+import static org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand.FLOWER_SERVO_DOWN;
+import static org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand.FLOWER_SERVO_UP;
+import static org.firstinspires.ftc.teamcode.commands.IntakeCommand.INTAKE_MOTOR_POWER;
 import static org.firstinspires.ftc.teamcode.util.paths.PathChainBuilder.buildPathChain;
 
 import java.util.Arrays;
 
+import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
-import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
 import org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand;
-import org.firstinspires.ftc.teamcode.commands.PollenScoringCommand;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommand;
+import org.firstinspires.ftc.teamcode.commands.ScoringCommand;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.FlowerSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ScoringSubsystem;
+import org.firstinspires.ftc.teamcode.util.PoseStorage;
 import org.firstinspires.ftc.teamcode.util.paths.AutonomousPaths;
 
+@Configurable
 @Autonomous(name = "Red Auto", group="Main")
 public class RedAuto extends OpMode {
+    public static double PARK_TIME = 5;
+    public static double SHOOTER_SPIN_UP_TIME = 0;
+    public static double AUTO_INTAKE_TIME = 1;
+    public static double APRIL_TAG_ALIGN_DETECTION_TIME = 1;
     IntakeSubsystem intakeSubsystem;
     ScoringSubsystem scoringSubsystem;
-    StorageSubsystem storageSubsystem;
-    PollenScoringCommand scoringCommand;
     FlowerIntakeCommand flowerIntakeCommand;
     FlowerSubsystem flowerSubsystem;
     IntakeCommand intakeCommand;
+    ScoringCommand scoringCommand;
     private Follower follower;
-    private SequentialCommandGroup autonomousRoutine;
     private AutonomousPaths autonomousPaths;
     private ElapsedTime autoTimer;
     boolean isShooting = false;
@@ -49,8 +51,6 @@ public class RedAuto extends OpMode {
     private boolean garden = true;
     private boolean hasPollen = true;
     private ElapsedTime aprilTagTimer;
-    private String middleDestination = ""; // flowerDown, garden
-    private String centerDestination = ""; // up, down, flowerUp
     private double[] currPos;
     private enum AutoState {START, IDLE, SHOOT, INTAKE_1, INTAKE_2, MOVING, CHECK_TIP, PARK}
     private AutoState currentState;
@@ -61,12 +61,12 @@ public class RedAuto extends OpMode {
     private boolean visited = false;
     private boolean visted2 = false;
     double intakeTime = 0;
-
+    TelemetryManager telemetryManager;
     @Override
     public void init() {
         autonomousPaths = new AutonomousPaths();
-        org.firstinspires.ftc.teamcode.util.Constants.TEAM = "R";
-
+        PoseStorage.TEAM = "R";
+        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
 
         follower = Constants.create(hardwareMap);
         follower.setX(autonomousPaths.getInitial()[0]);
@@ -74,13 +74,12 @@ public class RedAuto extends OpMode {
         follower.setHeading(Math.toRadians(autonomousPaths.getInitial()[2]));
         currPos = autonomousPaths.getInitial();
 
-        intakeSubsystem = new IntakeSubsystem(hardwareMap, telemetry);
-        scoringSubsystem = new ScoringSubsystem(hardwareMap, telemetry, follower);
-        storageSubsystem = new StorageSubsystem(hardwareMap, telemetry);
-        flowerSubsystem = new FlowerSubsystem(hardwareMap, telemetry);
-        scoringCommand = new PollenScoringCommand(scoringSubsystem, storageSubsystem, intakeSubsystem);
+        intakeSubsystem = new IntakeSubsystem(hardwareMap, telemetryManager);
+        scoringSubsystem = new ScoringSubsystem(hardwareMap, telemetryManager);
+        flowerSubsystem = new FlowerSubsystem(hardwareMap, telemetryManager);
+        scoringCommand = new ScoringCommand(scoringSubsystem, follower);
         flowerIntakeCommand = new FlowerIntakeCommand(flowerSubsystem);
-        intakeCommand = new IntakeCommand(storageSubsystem, intakeSubsystem);
+        intakeCommand = new IntakeCommand(intakeSubsystem);
 
         aprilTagTimer = new ElapsedTime();
         aprilTagTimer.reset();
@@ -96,8 +95,7 @@ public class RedAuto extends OpMode {
     @Override
     public void start() {
         currentState = AutoState.START;
-//        flowerSubsystem.setLeftServoPosition(FLOWER_LEFT_SERVO_UP);
-        flowerSubsystem.setRightServoPosition(FLOWER_RIGHT_SERVO_UP);
+        flowerSubsystem.setServoPosition(FLOWER_SERVO_UP);
         autoTimer.reset();
     }
 
@@ -154,7 +152,6 @@ public class RedAuto extends OpMode {
                 if (garden) {
                     garden = false;
                     if (Arrays.equals(currPos, autonomousPaths.getUp())) {
-                        middleDestination = "garden";
                         follower.follow(buildPathChain(currPos, autonomousPaths.getGarden1(), autonomousPaths.getUpGardenControl()));
                     } else {
                         follower.follow(buildPathChain(currPos, autonomousPaths.getGarden1()));
@@ -205,10 +202,10 @@ public class RedAuto extends OpMode {
 //                intakeSubsystem.setRampPivotPosition(intakeRampPivotPositionUp);
                 intakeSubsystem.setMotorPower(INTAKE_MOTOR_POWER);
                 if (Arrays.equals(currPos, autonomousPaths.getFlowerDown1()) || Arrays.equals(currPos, autonomousPaths.getFlowerUp1())) {
-                    flowerSubsystem.setRightServoPosition(FLOWER_RIGHT_SERVO_DOWN);
+                    flowerSubsystem.setServoPosition(FLOWER_SERVO_DOWN);
 //                    flowerSubsystem.setLeftServoPosition(FLOWER_LEFT_SERVO_DOWN);
                 } else {
-                    flowerSubsystem.setRightServoPosition(FLOWER_RIGHT_SERVO_UP);
+                    flowerSubsystem.setServoPosition(FLOWER_SERVO_UP);
 //                    flowerSubsystem.setLeftServoPosition(FLOWER_LEFT_SERVO_UP);
                 }
                 if (Arrays.equals(currPos, autonomousPaths.getFlowerDown1())) {
@@ -227,7 +224,7 @@ public class RedAuto extends OpMode {
             case INTAKE_2:
                 if (autoTimer.seconds() - intakeTime >= AUTO_INTAKE_TIME) {
                     hasPollen = true;
-                    flowerSubsystem.setRightServoPosition(FLOWER_RIGHT_SERVO_UP);
+                    flowerSubsystem.setServoPosition(FLOWER_SERVO_UP);
                     currentState = AutoState.IDLE;
                 }
                 break;

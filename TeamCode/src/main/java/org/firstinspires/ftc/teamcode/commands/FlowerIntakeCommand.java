@@ -1,17 +1,15 @@
 package org.firstinspires.ftc.teamcode.commands;
 
-import static org.firstinspires.ftc.teamcode.util.Constants.FLOWER_LEFT_SERVO_UP;
-import static org.firstinspires.ftc.teamcode.util.Constants.FLOWER_LEFT_SERVO_DOWN;
-import static org.firstinspires.ftc.teamcode.util.Constants.FLOWER_RIGHT_SERVO_UP;
-import static org.firstinspires.ftc.teamcode.util.Constants.FLOWER_RIGHT_SERVO_DOWN;
-
+import com.bylazar.configurables.annotations.Configurable;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.FlowerSubsystem;
 
+@Configurable
 public class FlowerIntakeCommand extends CommandBase {
     private final FlowerSubsystem flowerSubsystem;
-
+    public static double FLOWER_SERVO_DOWN = 0.2;
+    public static double FLOWER_SERVO_UP = 0.5;
     public FlowerIntakeCommand(FlowerSubsystem flowerSubsystem) {
         this.flowerSubsystem = flowerSubsystem;
 
@@ -20,13 +18,11 @@ public class FlowerIntakeCommand extends CommandBase {
 
     @Override
     public void initialize() {
-//        flowerSubsystem.setLeftServoPosition(FLOWER_LEFT_SERVO_DOWN);
-        flowerSubsystem.setRightServoPosition(FLOWER_RIGHT_SERVO_DOWN);
+        flowerSubsystem.setServoPosition(FLOWER_SERVO_UP);
     }
 
     @Override
     public void end(boolean interrupted) {
-//        flowerSubsystem.setLeftServoPosition(FLOWER_LEFT_SERVO_UP);
-        flowerSubsystem.setRightServoPosition(FLOWER_RIGHT_SERVO_UP);
+        flowerSubsystem.setServoPosition(FLOWER_SERVO_DOWN);
     }
 }

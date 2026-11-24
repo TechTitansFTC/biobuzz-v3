@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 @Configurable
@@ -15,6 +16,8 @@ public class IntakeSubsystem extends SubsystemBase {
     public static boolean swapDigitalSensorValues = false;
     private final DcMotor intakeMotor;
     private final DcMotor transferMotor;
+    private final Servo leftIntakePivotServo;
+    private final Servo rightIntakePivotServo;
     private final TelemetryManager telemetry;
     private final DigitalChannel sensor1;
     private final DigitalChannel sensor2;
@@ -28,6 +31,9 @@ public class IntakeSubsystem extends SubsystemBase {
         sensor2 = hardwareMap.get(DigitalChannel.class, "sensor2");
         sensor3 = hardwareMap.get(DigitalChannel.class, "sensor3");
         sensor4 = hardwareMap.get(DigitalChannel.class, "sensor4");
+
+        leftIntakePivotServo = hardwareMap.get(Servo.class, "leftIntakePivot");
+        rightIntakePivotServo = hardwareMap.get(Servo.class, "rightIntakePivot");
 
         if (intakeMotorReversed) {
             intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -47,6 +53,8 @@ public class IntakeSubsystem extends SubsystemBase {
         telemetry.addLine("");
         telemetry.addLine("Intake/Storage");
         telemetry.addData("Intake Motor Power", getMotorPower());
+        telemetry.addData("Left Intake Pivot Servo", getLeftIntakePivotServoPosition());
+        telemetry.addData("Right Intake Pivot Servo", getRightIntakePivotServoPosition());
         telemetry.addData("Sensor 1", getSensor1());
         telemetry.addData("Sensor 2", getSensor2());
         telemetry.addData("Sensor 3", getSensor3());
@@ -77,6 +85,22 @@ public class IntakeSubsystem extends SubsystemBase {
     public boolean flip(boolean variable) {
         if (swapDigitalSensorValues) return !variable;
         return variable;
+    }
+
+    public void setRightIntakePivotServoPosition(double position) {
+        rightIntakePivotServo.setPosition(position);
+    }
+
+    public void setLeftIntakePivotServoPosition(double position) {
+        leftIntakePivotServo.setPosition(position);
+    }
+
+    public double getRightIntakePivotServoPosition() {
+        return rightIntakePivotServo.getPosition();
+    }
+
+    public double getLeftIntakePivotServoPosition() {
+        return leftIntakePivotServo.getPosition();
     }
 
     public double getMotorPower() {

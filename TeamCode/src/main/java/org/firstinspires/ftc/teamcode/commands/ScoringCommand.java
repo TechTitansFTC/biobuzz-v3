@@ -1,10 +1,5 @@
 package org.firstinspires.ftc.teamcode.commands;
 
-import static org.firstinspires.ftc.teamcode.util.Constants.ALIGN_APRIL_TAG_TIME;
-import static org.firstinspires.ftc.teamcode.util.Constants.ALIGN_IMU_TIME;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_GATE_CLOSE_POSITION;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_GATE_OPEN_POSITION;
-import static org.firstinspires.ftc.teamcode.util.Constants.SHOOTING_TIME;
 import static org.firstinspires.ftc.teamcode.util.PoseStorage.TEAM;
 
 import com.bylazar.configurables.annotations.Configurable;
@@ -27,9 +22,6 @@ public class ScoringCommand extends CommandBase {
     public static double POLLEN_SHOOTER_SERVO_CONTROLLER_KI = 0.0;
     public static double POLLEN_SHOOTER_SERVO_CONTROLLER_KD = 0.004;
     public static double POLLEN_SHOOTER_SERVO_CONTROLLER_KF = 0.06;
-    public static double POLLEN_SHOOTER_VELOCITY_MODEL_A = 0.1;
-    public static double POLLEN_SHOOTER_VELOCITY_MODEL_B = 1.1;
-    public static double POLLEN_SHOOTER_VELOCITY_MODEL_K = 2000;
     public static double TARGET_X_RED = 55.5;
     public static double TARGET_X_BLUE = 84;
     public static double TARGET_Y_DOWN = 55;
@@ -65,9 +57,9 @@ public class ScoringCommand extends CommandBase {
         rpmTable = new InterpolatingTable();
         hoodTable = new InterpolatingTable();
 
-        rpmTable.put(24.0, 2200.0);
+        rpmTable.put(0, 0);
 
-        hoodTable.put(24.0, 0.25);
+        hoodTable.put(0, 0);
 
         pollenTurretServoController = new PIDController(POLLEN_TURRET_SERVO_CONTROLLER_KP, POLLEN_TURRET_SERVO_CONTROLLER_KI,
                 POLLEN_TURRET_SERVO_CONTROLLER_KD, POLLEN_TURRET_SERVO_CONTROLLER_KF);
@@ -95,7 +87,6 @@ public class ScoringCommand extends CommandBase {
         double currY = scoringSubsystem.getCurrY();
         double currHeading = scoringSubsystem.getCurrHeading();
 
-        // TODO: finish hood logic
         double targetX;
         double targetY;
         if (TEAM.equals("R")) {
@@ -137,10 +128,16 @@ public class ScoringCommand extends CommandBase {
             pollenTurretServoController.setTarget(0);
             pollenTurretServoPower = pollenTurretServoController.calculateOutput(previousBearing, controllerTimer.seconds());
         } else {
-            double angleToTarget = scoringSubsystem.getAngleToTarget();
+            double fieldAngleToTarget = scoringSubsystem.getAngleToTarget();
+
+            double robotRelativeTargetAngle = wrapAngle(fieldAngleToTarget - currHeading);
+
             double currentValuePollenTurretServo = scoringSubsystem.getPollenTurretAngleDegrees();
-            pollenTurretServoController.setTarget(angleToTarget);
-            pollenTurretServoPower = pollenTurretServoController.calculateOutput(currentValuePollenTurretServo, controllerTimer.seconds());
+            pollenTurretServoController.setTarget(robotRelativeTargetAngle);
+            pollenTurretServoPower = pollenTurretServoController.calculateOutput(
+                    currentValuePollenTurretServo,
+                    controllerTimer.seconds()
+            );
         }
 
         scoringSubsystem.setPollenTurretServoPower(pollenTurretServoPower);
@@ -161,5 +158,15 @@ public class ScoringCommand extends CommandBase {
 
     private double HOOD_TURRET_POSITION_MODEL(double distanceToTarget) {
         return hoodTable.get(distanceToTarget);
+    }
+
+    private double wrapAngle(double degrees) {
+        while (degrees > 180) {
+            degrees -= 360;
+        }
+        while (degrees < -180) {
+            degrees += 360;
+        }
+        return degrees;
     }
 }
