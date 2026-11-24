@@ -51,6 +51,8 @@ public class ScoringSubsystem extends SubsystemBase {
     private double currX;
     private double currY;
     private double currHeading;
+    private double angleToTarget;
+    private double distanceToTarget;
 
     public ScoringSubsystem(HardwareMap hardwareMap, TelemetryManager telemetry) {
         this.telemetry = telemetry;
@@ -67,6 +69,11 @@ public class ScoringSubsystem extends SubsystemBase {
         leftPollenTurretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         setPosition(PoseStorage.autonomousEndPose);
+
+        angleToTarget = 0;
+        distanceToTarget = 0;
+        currX = 0;
+        currY = 0;
 
         if (RIGHT_POLLEN_TURRET_MOTOR_REVERSED) {
             rightPollenTurretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -100,6 +107,8 @@ public class ScoringSubsystem extends SubsystemBase {
         telemetry.addData("CurrX", getCurrX());
         telemetry.addData("CurrY", getCurrY());
         telemetry.addData("CurrHeading", getCurrHeading());
+        telemetry.addData("Angle to Target", getAngleToTarget());
+        telemetry.addData("Distance to Target", getDistanceToTarget());
     }
 
     public void setPollenShooterTargetRPM(double target) { targetMotorRPM = target; }
@@ -159,29 +168,6 @@ public class ScoringSubsystem extends SubsystemBase {
         return rawDegrees * ENCODER_TO_TURRET_RATIO;
     }
 
-
-    public double getDistanceToScore(Follower follower) {
-        double robotX = follower.pose().x();
-        double robotY = follower.pose().y();
-        double score1X;
-        double score2X;
-        if (TEAM.equals("R")) {
-            score1X = 57;
-            score2X = 57;
-        } else {
-            score1X = 81;
-            score2X = 81;
-        }
-
-        double score1Y = 48;
-        double score2Y = 96;
-
-        double distanceFromScore1 = Math.sqrt(Math.pow(robotX - score1X, 2) + Math.pow(robotY - score1Y, 2));
-        double distanceFromScore2 = Math.sqrt(Math.pow(robotX - score2X, 2) + Math.pow(robotY - score2Y, 2));
-
-        return Math.min(distanceFromScore1, distanceFromScore2);
-    }
-
     private void updateFilteredRPM() {
         if (firstShooterUpdate) {
             filteredRpm = getPollenTurretMotorRawRPM();
@@ -208,7 +194,7 @@ public class ScoringSubsystem extends SubsystemBase {
         return currHeading;
     }
 
-    public double convertHeading(double beforeDegrees) {
+    private double convertHeading(double beforeDegrees) {
         double after = 90.0 - beforeDegrees;
 
         while (after > 180.0) {
@@ -219,5 +205,21 @@ public class ScoringSubsystem extends SubsystemBase {
         }
 
         return after;
+    }
+
+    public void setAngleToTarget(double xDiff, double yDiff) {
+        angleToTarget = Math.toDegrees(Math.atan2(xDiff, yDiff));
+    }
+
+    public double getAngleToTarget() {
+        return angleToTarget;
+    }
+
+    public void setDistanceToTarget(double xDiff, double yDiff) {
+        distanceToTarget = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
+    }
+
+    public double getDistanceToTarget() {
+        return distanceToTarget;
     }
 }

@@ -2,17 +2,10 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import static org.firstinspires.ftc.teamcode.util.Constants.ALIGN_APRIL_TAG_TIME;
 import static org.firstinspires.ftc.teamcode.util.Constants.ALIGN_IMU_TIME;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_MOTOR_KD;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_MOTOR_KF;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_MOTOR_KI;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_MOTOR_KP;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SERVO_KD;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SERVO_KF;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SERVO_KI;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SERVO_KP;
 import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_GATE_CLOSE_POSITION;
 import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_GATE_OPEN_POSITION;
 import static org.firstinspires.ftc.teamcode.util.Constants.SHOOTING_TIME;
+import static org.firstinspires.ftc.teamcode.util.PoseStorage.TEAM;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
@@ -33,6 +26,14 @@ public class ScoringCommand extends CommandBase {
     public static double POLLEN_SHOOTER_SERVO_CONTROLLER_KI = 0.0;
     public static double POLLEN_SHOOTER_SERVO_CONTROLLER_KD = 0.004;
     public static double POLLEN_SHOOTER_SERVO_CONTROLLER_KF = 0.06;
+    public static double POLLEN_SHOOTER_VELOCITY_MODEL_A = 0.1;
+    public static double POLLEN_SHOOTER_VELOCITY_MODEL_B = 1.1;
+    public static double POLLEN_SHOOTER_VELOCITY_MODEL_K = 2000;
+    public static double TARGET_X_RED = 55.5;
+    public static double TARGET_X_BLUE = 84;
+    public static double TARGET_Y_DOWN = 55;
+    public static double TARGET_Y_UP = 85.5;
+    public static double FIELD_MID_Y = 72;
 
     private final ScoringSubsystem scoringSubsystem;
     private final Follower follower;
@@ -43,7 +44,6 @@ public class ScoringCommand extends CommandBase {
 
     private double pollenTurretServoPower;
     private double pollenTurretMotorPower;
-    private double lateralDistance;
     private double previousBearing;
 
     public ScoringCommand(ScoringSubsystem scoringSubsystem, Follower follower) {
@@ -56,7 +56,6 @@ public class ScoringCommand extends CommandBase {
         pollenTurretServoPower = 0;
         pollenTurretMotorPower = 0;
 
-        lateralDistance = 0;
         previousBearing = 0;
 
         pollenTurretServoController = new PIDController(POLLEN_TURRET_SERVO_CONTROLLER_KP, POLLEN_TURRET_SERVO_CONTROLLER_KI,
@@ -86,66 +85,48 @@ public class ScoringCommand extends CommandBase {
         double currHeading = scoringSubsystem.getCurrHeading();
 
         // TODO: finish target logic like choosing which one
-        double targetY = 0;
-        double targetX = 57;
-
-
+        double targetX;
+        double targetY;
+        if (TEAM.equals("R")) {
+            targetX = TARGET_X_RED;
+        } else {
+            targetX = TARGET_X_BLUE;
+        }
+        if (currY >= FIELD_MID_Y) {
+            targetY = TARGET_Y_UP;
+        } else {
+            targetY = TARGET_Y_DOWN;
+        }
 
         double xDiff = targetX - currX;
         double yDiff = targetY - currY;
 
-        double angle = Math.toDegrees(Math.atan2(xDiff, yDiff));
-        angle = normalizeDegrees(angle - currHeading);
+        // Motor Power
+        scoringSubsystem.setDistanceToTarget(xDiff, yDiff);
 
-        lateralDistance = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
-        double pollenTurretTargetRPM = POLLEN_TURRET_VELOCITY_MODEL(lateralDistance);
-
-        pollenTurretServoController.setTarget(angle);
+        double distanceToTarget = scoringSubsystem.getDistanceToTarget();
+        double pollenTurretTargetRPM = POLLEN_TURRET_VELOCITY_MODEL(distanceToTarget);
+        double pollenTurretCurrentRPM = scoringSubsystem.getPollenShooterRPM();
+        scoringSubsystem.setPollenShooterTargetRPM(pollenTurretTargetRPM);
         pollenTurretMotorController.setTarget(pollenTurretTargetRPM);
-        controllerTimer.reset();
-        stateTimer.reset();
+        pollenTurretMotorPower = pollenTurretMotorController.calculateOutput(pollenTurretCurrentRPM, controllerTimer.seconds());
 
-        scoringState = ScoringRoutine.ALIGN_IMU;
-        double currentValuePollenTurretServo = scoringSubsystem.getPollenTurretAngleDegrees();
-
-        pollenTurretServoPower = pollenTurretServoController.calculateOutput(currentValuePollenTurretServo, controllerTimer.seconds());
-
-        if (stateTimer.seconds() >= ALIGN_IMU_TIME) {
-            pollenTurretServoController.setTarget(0);
-            stateTimer.reset();
-            scoringState = ScoringRoutine.ALIGN_APRIL_TAGS;
-        }
-
-
+        // Servo Power
         double offsetDegreesPollen = scoringSubsystem.getBearing();
-
-        pollenTurretServoPower = pollenTurretServoController.calculateOutput(offsetDegreesPollen, controllerTimer.seconds());
-
-        if (stateTimer.seconds() >= ALIGN_APRIL_TAG_TIME) {
-            stateTimer.reset();
-            storageSubsystem.setPollenGateServoPosition(POLLEN_GATE_OPEN_POSITION);
-            storageSubsystem.setTransferMotorPower(TRANSFER_MOTOR_POWER);
-            scoringState = ScoringRoutine.SHOOT;
+        scoringSubsystem.setAngleToTarget(xDiff, yDiff);
+        if (offsetDegreesPollen != 361 || bearingRetainerTimer.seconds() <= RETAIN_BEARING_TIME) {
+            if (offsetDegreesPollen != 361) {
+                previousBearing = offsetDegreesPollen;
+                bearingRetainerTimer.reset();
+            }
+            pollenTurretServoController.setTarget(0);
+            pollenTurretServoPower = pollenTurretServoController.calculateOutput(previousBearing, controllerTimer.seconds());
+        } else {
+            double angleToTarget = scoringSubsystem.getAngleToTarget();
+            double currentValuePollenTurretServo = scoringSubsystem.getPollenTurretAngleDegrees();
+            pollenTurretServoController.setTarget(angleToTarget);
+            pollenTurretServoPower = pollenTurretServoController.calculateOutput(currentValuePollenTurretServo, controllerTimer.seconds());
         }
-
-        double offsetDegreesPollen2 = scoringSubsystem.getBearing();
-
-        pollenTurretServoPower = pollenTurretServoController.calculateOutput(offsetDegreesPollen2, controllerTimer.seconds());
-
-        if (stateTimer.seconds() >= SHOOTING_TIME) {
-            scoringState = ScoringRoutine.END;
-            stateTimer.reset();
-        }
-
-        storageSubsystem.setPollenGateServoPosition(POLLEN_GATE_CLOSE_POSITION);
-        storageSubsystem.setTransferMotorPower(0);
-
-
-        double currentValuePollenTurretMotor = scoringSubsystem.getPollenTurretMotorRawRPM();
-        double currentValueNectarTurretMotor = scoringSubsystem.getNectarTurretMotorRPM();
-
-
-        pollenTurretMotorPower = pollenTurretMotorController.calculateOutput(currentValuePollenTurretMotor, controllerTimer.seconds());
 
         scoringSubsystem.setPollenTurretServoPower(pollenTurretServoPower);
         scoringSubsystem.setPollenTurretShooterPower(pollenTurretMotorPower);
@@ -153,29 +134,14 @@ public class ScoringCommand extends CommandBase {
     }
 
     @Override
-    public boolean isFinished() {
-        return endNow || scoringState == ScoringRoutine.END;
-    }
-
-    @Override
     public void end(boolean interrupted) {
-        storageSubsystem.setPollenGateServoPosition(POLLEN_GATE_CLOSE_POSITION);
-        storageSubsystem.setTransferMotorPower(0);
         scoringSubsystem.setPollenTurretServoPower(0);
-        scoringSubsystem.setNectarTurretServoPower(0);
+        scoringSubsystem.setPollenTurretShooterPower(0);
     }
 
 
-
-
-
-    public double normalizeDegrees(double degrees) {
-        while (degrees > 180.0) {
-            degrees -= 360.0;
-        }
-        while (degrees <= -180.0) {
-            degrees += 360.0;
-        }
-        return degrees;
+    private double POLLEN_TURRET_VELOCITY_MODEL(double distanceToTarget) {
+        return POLLEN_SHOOTER_VELOCITY_MODEL_A * Math.pow(POLLEN_SHOOTER_VELOCITY_MODEL_B, distanceToTarget) +
+                POLLEN_SHOOTER_VELOCITY_MODEL_K;
     }
 }
