@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
@@ -40,6 +41,7 @@ public class ScoringSubsystem extends SubsystemBase {
     private final DcMotorEx rightPollenTurretMotor;
     private final DcMotorEx leftPollenTurretMotor;
     private final CRServo pollenTurretServo;
+    private final Servo hoodServo;
     private final AnalogInput pollenTurretEncoder;
     private final AprilTagProcessor aprilTag;
     private final VisionPortal pollenTurretCamera;
@@ -60,6 +62,7 @@ public class ScoringSubsystem extends SubsystemBase {
         rightPollenTurretMotor = hardwareMap.get(DcMotorEx.class, "rightPollenShooter");
         leftPollenTurretMotor = hardwareMap.get(DcMotorEx.class, "leftPollenShooter");
         pollenTurretServo = hardwareMap.get(CRServo.class, "pollenTurret");
+        hoodServo = hardwareMap.get(Servo.class, "hood");
 
         pollenTurretEncoder = hardwareMap.get(AnalogInput.class, "pollenEncoder");
 
@@ -109,6 +112,7 @@ public class ScoringSubsystem extends SubsystemBase {
         telemetry.addData("CurrHeading", getCurrHeading());
         telemetry.addData("Angle to Target", getAngleToTarget());
         telemetry.addData("Distance to Target", getDistanceToTarget());
+        telemetry.addData("hood pos", getHoodPosition());
     }
 
     public void setPollenShooterTargetRPM(double target) { targetMotorRPM = target; }
@@ -156,6 +160,14 @@ public class ScoringSubsystem extends SubsystemBase {
         }
 
         return 361.0;
+    }
+
+    public void setHoodPosition(double position) {
+        hoodServo.setPosition(position);
+    }
+
+    public double getHoodPosition() {
+        return hoodServo.getPosition();
     }
 
     public double getPollenTurretAngleDegrees() {

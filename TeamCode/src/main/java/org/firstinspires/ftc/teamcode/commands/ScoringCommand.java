@@ -84,7 +84,7 @@ public class ScoringCommand extends CommandBase {
         double currY = scoringSubsystem.getCurrY();
         double currHeading = scoringSubsystem.getCurrHeading();
 
-        // TODO: finish target logic like choosing which one
+        // TODO: finish hood logic
         double targetX;
         double targetY;
         if (TEAM.equals("R")) {
@@ -110,6 +110,10 @@ public class ScoringCommand extends CommandBase {
         scoringSubsystem.setPollenShooterTargetRPM(pollenTurretTargetRPM);
         pollenTurretMotorController.setTarget(pollenTurretTargetRPM);
         pollenTurretMotorPower = pollenTurretMotorController.calculateOutput(pollenTurretCurrentRPM, controllerTimer.seconds());
+
+        double hoodTargetPos = HOOD_TURRET_POSITION_MODEL(distanceToTarget);
+
+        scoringSubsystem.setHoodPosition(hoodTargetPos);
 
         // Servo Power
         double offsetDegreesPollen = scoringSubsystem.getBearing();
@@ -141,6 +145,10 @@ public class ScoringCommand extends CommandBase {
 
 
     private double POLLEN_TURRET_VELOCITY_MODEL(double distanceToTarget) {
+        return POLLEN_SHOOTER_VELOCITY_MODEL_A * Math.pow(POLLEN_SHOOTER_VELOCITY_MODEL_B, distanceToTarget) +
+                POLLEN_SHOOTER_VELOCITY_MODEL_K;
+    }
+    private double HOOD_TURRET_POSITION_MODEL(double distanceToTarget) {
         return POLLEN_SHOOTER_VELOCITY_MODEL_A * Math.pow(POLLEN_SHOOTER_VELOCITY_MODEL_B, distanceToTarget) +
                 POLLEN_SHOOTER_VELOCITY_MODEL_K;
     }
