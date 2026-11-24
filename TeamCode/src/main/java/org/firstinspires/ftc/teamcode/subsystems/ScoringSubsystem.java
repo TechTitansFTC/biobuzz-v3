@@ -1,22 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import static org.firstinspires.ftc.teamcode.game.tests.isolatedTests.ShootingTest.TARGET_RPM;
-import static org.firstinspires.ftc.teamcode.util.Constants.ENCODER_TO_TURRET_RATIO;
-import static org.firstinspires.ftc.teamcode.util.Constants.NOMINAL_VOLTAGE;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SHOOTER_ENCODER_REVERSED;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SHOOTER_MOTOR_REVERSED;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SHOOTER_KD;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SHOOTER_KI;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SHOOTER_KP;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SHOOTER_KS;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SHOOTER_KV;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SHOOTER_RPM_FILTER;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SHOOTER_RPM_TOLERANCE;
-import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_SHOOTER_TARGET_RPM;
-import static org.firstinspires.ftc.teamcode.util.Constants.TEAM;
+import static org.firstinspires.ftc.teamcode.util.PoseStorage.TEAM;
 
 import android.util.Size;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -25,17 +13,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.util.PIDController;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagClusterDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -43,25 +27,46 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
+@Configurable
 public class ScoringSubsystem extends SubsystemBase {
-    private final DcMotorEx pollenTurretMotor;
+    public static boolean RIGHT_POLLEN_TURRET_MOTOR_REVERSED = false;
+    public static boolean LEFT_POLLEN_TURRET_MOTOR_REVERSED = true;
+    public static boolean POLLEN_TURRET_CAMERA_REVERSED = true;
+    public static double POLLEN_SHOOTER_RPM_FILTER = 0.3;
+    public static double ENCODER_TO_TURRET_RATIO = 2.75;
+
+    private final DcMotorEx rightPollenTurretMotor;
+    private final DcMotorEx leftPollenTurretMotor;
     private final CRServo pollenTurretServo;
     private final AnalogInput pollenTurretEncoder;
     private final AprilTagProcessor aprilTag;
     private final VisionPortal pollenTurretCamera;
     private final VoltageSensor battery;
     private final TelemetryManager telemetry;
+    private double filteredRpm = 0;
+    private boolean firstShooterUpdate = true;
+    private double targetMotorRPM = 0;
 
     public ScoringSubsystem(HardwareMap hardwareMap, TelemetryManager telemetry, Follower follower) {
         this.telemetry = telemetry;
 
-        pollenTurretMotor = hardwareMap.get(DcMotorEx.class, "pollenShooter");
+        rightPollenTurretMotor = hardwareMap.get(DcMotorEx.class, "rightPollenShooter");
+        leftPollenTurretMotor = hardwareMap.get(DcMotorEx.class, "leftPollenShooter");
         pollenTurretServo = hardwareMap.get(CRServo.class, "pollenTurret");
 
         pollenTurretEncoder = hardwareMap.get(AnalogInput.class, "pollenEncoder");
 
-        pollenTurretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        pollenTurretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightPollenTurretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftPollenTurretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightPollenTurretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        leftPollenTurretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        if (RIGHT_POLLEN_TURRET_MOTOR_REVERSED) {
+            rightPollenTurretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
+        if (LEFT_POLLEN_TURRET_MOTOR_REVERSED) {
+            leftPollenTurretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
 
         battery = hardwareMap.voltageSensor.iterator().next();
         aprilTag = new AprilTagProcessor.Builder().setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES).build();
@@ -78,115 +83,37 @@ public class ScoringSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        updateFilteredRPM();
+
         telemetry.addLine("");
         telemetry.addLine("Scoring");
         telemetry.addData("Camera bearing", getBearing());
-        telemetry.addData("Pollen shooter RPM", filteredRpm);
-        telemetry.addData("Pollen shooter target", POLLEN_SHOOTER_TARGET_RPM);
-        telemetry.addData("Pollen shooter at speed", isPollenShooterAtSpeed());
-        telemetry.addData("", "");
-        telemetry.addData("NOW DATA", "");
-        telemetry.addData("Distance to score", distanceToScore);
-        telemetry.addData("pose x", follower.pose().x());
-        telemetry.addData("pose y", follower.pose().y());
+        telemetry.addData("Pollen shooter RPM", getPollenShooterRPM());
+        telemetry.addData("Pollen shooter target", getPollenShooterTargetRPM());
     }
 
-    /**
-     * Holds the pollen flywheel at POLLEN_SHOOTER_TARGET_RPM. Runs every loop from periodic(),
-     * so the flywheel stays on for the whole OpMode no matter which command is running.
-     * Voltage-compensated feedforward + PID, same as ShootingTest.
-     */
-    private void updatePollenShooter() {
-        double dt = shooterLoopTimer.seconds();
-        shooterLoopTimer.reset();
-
-        pollenTurretMotor.setDirection(POLLEN_SHOOTER_MOTOR_REVERSED
-                ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
-
-        double rawRpm = getPollenTurretMotorRPM();
-        if (firstShooterUpdate) {
-            filteredRpm = rawRpm;
-            dt = 0.02;
-            firstShooterUpdate = false;
-        }
-        filteredRpm += Range.clip(POLLEN_SHOOTER_RPM_FILTER, 0.01, 1) * (rawRpm - filteredRpm);
-
-        double distance = getDistance();
-        // Re-read gains every loop so Panels edits apply live.
-        shooterController.setConstants(POLLEN_SHOOTER_KP, POLLEN_SHOOTER_KI, POLLEN_SHOOTER_KD, 0);
-        double target = TARGET_RPM;
-        if (shooterController.getTarget() != target) {
-            shooterController.setTarget(target);
-        }
-
-        if (!pollenShooterEnabled) {
-            pollenTurretMotor.setPower(0); // toggled off with B: coast down
-            return;
-        }
-
-        double voltage = battery.getVoltage();
-        if (voltage < 1) voltage = NOMINAL_VOLTAGE;
-
-        double feedforward = (POLLEN_SHOOTER_KS + POLLEN_SHOOTER_KV * POLLEN_SHOOTER_TARGET_RPM) * (NOMINAL_VOLTAGE / voltage);
-        double feedback = shooterController.calculateOutput(filteredRpm, dt);
-
-        pollenTurretMotor.setPower(Range.clip(feedforward + feedback, 0, 1)); // never drive the flywheel backwards
-    }
-
-    /** Turns the always-on flywheel off or back on (bound to B in TeleOp). On by default. */
-    public void togglePollenShooter() {
-        pollenShooterEnabled = !pollenShooterEnabled;
-        if (pollenShooterEnabled) {
-            // Start the PID fresh so stale integral/derivative from before doesn't carry over.
-            shooterController.setTarget(POLLEN_SHOOTER_TARGET_RPM);
-        }
-    }
-
-    public boolean isPollenShooterEnabled() {
-        return pollenShooterEnabled;
-    }
-
-    /** Smoothed flywheel RPM (what the shooter PID uses). */
-    public double getPollenShooterRpm() {
+    public void setPollenShooterTargetRPM(double target) { targetMotorRPM = target; }
+    public double getPollenShooterTargetRPM() { return targetMotorRPM; }
+    public double getPollenShooterRPM() {
         return filteredRpm;
     }
 
-    public boolean isPollenShooterAtSpeed() {
-        return pollenShooterEnabled && Math.abs(POLLEN_SHOOTER_TARGET_RPM - filteredRpm) <= POLLEN_SHOOTER_RPM_TOLERANCE;
-    }
-
-    public void setPollenTurretMotorPower(double power) {
-        pollenTurretMotor.setPower(power);
-    }
-
-    public void setNectarTurretMotorPower(double power) {
-        nectarTurretMotor.setPower(power);
+    public void setPollenTurretShooterPower(double power) {
+        rightPollenTurretMotor.setPower(power);
     }
 
     public void setPollenTurretServoPower(double power) {
         pollenTurretServo.setPower(power);
     }
 
-    public void setNectarTurretServoPower(double power) {
-        nectarTurretServo.setPower(power);
-    }
+    private double getPollenTurretMotorRawRPM() {
+        double ticksPerSecond = rightPollenTurretMotor.getVelocity();
 
-    public double getPollenTurretMotorRPM() {
-        double ticksPerSecond = pollenTurretMotor.getVelocity();
-        double rpm = (ticksPerSecond * 60) / 28.0;
-
-        // setDirection() flips power and encoder together; this flips only the reading.
-        return POLLEN_SHOOTER_ENCODER_REVERSED ? -rpm : rpm;
+        return (ticksPerSecond * 60) / 28.0;
     }
 
     public double getBatteryVoltage() {
         return battery.getVoltage();
-    }
-
-    public double getNectarTurretMotorRPM() {
-        double ticksPerSecond = nectarTurretMotor.getVelocity();
-
-        return (ticksPerSecond * 60) / 28.0;
     }
 
     public Double getBearing() {
@@ -203,7 +130,8 @@ public class ScoringSubsystem extends SubsystemBase {
                         continue;
                     }
 
-                    return -clusterDet.ftcPose.bearing;
+                    if (POLLEN_TURRET_CAMERA_REVERSED) return -clusterDet.ftcPose.bearing;
+                    return clusterDet.ftcPose.bearing;
                 }
             }
         }
@@ -211,55 +139,16 @@ public class ScoringSubsystem extends SubsystemBase {
         return 361.0;
     }
 
-    public Double getDistance() {
-        List<AprilTagDetection> detections = aprilTag.getDetections();
-
-        for (AprilTagDetection detection : detections) {
-            if (detection instanceof AprilTagClusterDetection) {
-
-                AprilTagClusterDetection clusterDet = (AprilTagClusterDetection) detection;
-
-                if (clusterDet.metadata != null) {
-
-                    if (!clusterDet.metadata.name.startsWith(TEAM)) {
-                        continue;
-                    }
-
-                    return clusterDet.ftcPose.range;
-                }
-            }
-        }
-
-        return -1.0;
-    }
-
     public double getPollenTurretAngleDegrees() {
         double voltage = pollenTurretEncoder.getVoltage();
         double rawDegrees = (voltage / 3.3) * 360.0;
 
-        // Force the wrap-around to become negative degrees
-        // Turning backwards past 0 (e.g., 350 degrees) becomes -10 degrees
-        if (rawDegrees > 180.0) {
-            rawDegrees -= 360.0;
-        }
+        // FORWARD WILL BE POSITIVE 180 degrees pleeeeeaase
+        rawDegrees -= 180;
 
         return rawDegrees * ENCODER_TO_TURRET_RATIO;
     }
 
-    public double getNectarTurretAngleDegrees() {
-        double voltage = nectarTurretEncoder.getVoltage();
-        double maxVoltage = 3.3;
-
-        double rawDegrees = (voltage / 3.3) * 360.0;
-
-        // Force the wrap-around to become negative degrees
-        // Turning backwards past 0 (e.g., 350 degrees) becomes -10 degrees
-        if (rawDegrees > 180.0) {
-            rawDegrees -= 360.0;
-        }
-
-        return rawDegrees * ENCODER_TO_TURRET_RATIO;
-    }
 
     public double getDistanceToScore(Follower follower) {
         double robotX = follower.pose().x();
@@ -281,5 +170,13 @@ public class ScoringSubsystem extends SubsystemBase {
         double distanceFromScore2 = Math.sqrt(Math.pow(robotX - score2X, 2) + Math.pow(robotY - score2Y, 2));
 
         return Math.min(distanceFromScore1, distanceFromScore2);
+    }
+
+    private void updateFilteredRPM() {
+        if (firstShooterUpdate) {
+            filteredRpm = getPollenTurretMotorRawRPM();
+            firstShooterUpdate = false;
+        }
+        filteredRpm += Range.clip(POLLEN_SHOOTER_RPM_FILTER, 0.01, 1) * (getPollenTurretMotorRawRPM() - filteredRpm);
     }
 }

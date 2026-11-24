@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class FlowerSubsystem extends SubsystemBase {
     private final TelemetryManager telemetry;
@@ -23,7 +22,7 @@ public class FlowerSubsystem extends SubsystemBase {
     public void periodic() {
         telemetry.addLine("");
         telemetry.addLine("Flower");
-        telemetry.addData("flowerLeftServo", getServoPosition());
+        telemetry.addData("flowerServo", getServoPosition());
     }
 
 

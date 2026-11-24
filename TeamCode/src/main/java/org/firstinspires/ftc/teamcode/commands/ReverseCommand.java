@@ -8,10 +8,9 @@ import com.seattlesolvers.solverslib.command.CommandBase;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 
 public class ReverseCommand extends CommandBase {
-    private final StorageSubsystem storageSubsystem;
     private final IntakeSubsystem intakeSubsystem;
 
-    public ReverseCommand(StorageSubsystem storageSubsystem, IntakeSubsystem intakeSubsystem) {
+    public ReverseCommand(IntakeSubsystem intakeSubsystem) {
         this.storageSubsystem = storageSubsystem;
         this.intakeSubsystem = intakeSubsystem;
 

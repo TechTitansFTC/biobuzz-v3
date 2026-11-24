@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.game;
 
-import static org.firstinspires.ftc.teamcode.util.Constants.CONTROL_HUB_LOGO_FACING_DIRECTION;
-import static org.firstinspires.ftc.teamcode.util.Constants.CONTROL_HUB_USB_FACING_DIRECTION;
+import static org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem.CONTROL_HUB_LOGO_FACING_DIRECTION;
+import static org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem.CONTROL_HUB_USB_FACING_DIRECTION;
 import static org.firstinspires.ftc.teamcode.util.PoseStorage.autonomousEndPose;
 
 import com.pedropathing.follower.Follower;
@@ -28,7 +28,6 @@ public class TeleOp extends OpMode {
     MecanumDriveSubsystem mecanumDriveSubsystem;
     IntakeSubsystem intakeSubsystem;
     ScoringSubsystem scoringSubsystem;
-    StorageSubsystem storageSubsystem;
     FlowerSubsystem flowerSubsystem;
     DriveCommand driveCommand;
     PollenScoringCommand pollenScoringCommand;

@@ -166,14 +166,14 @@ public class ScoringCommand extends CommandBase {
                 break;
         }
 
-        double currentValuePollenTurretMotor = scoringSubsystem.getPollenTurretMotorRPM();
+        double currentValuePollenTurretMotor = scoringSubsystem.getPollenTurretMotorRawRPM();
         double currentValueNectarTurretMotor = scoringSubsystem.getNectarTurretMotorRPM();
 
 
         pollenTurretMotorPower = pollenTurretMotorController.calculateOutput(currentValuePollenTurretMotor, controllerTimer.seconds());
 
         scoringSubsystem.setPollenTurretServoPower(pollenTurretServoPower);
-        scoringSubsystem.setPollenTurretMotorPower(pollenTurretMotorPower);
+        scoringSubsystem.setPollenTurretShooterPower(pollenTurretMotorPower);
         controllerTimer.reset();
     }
 
