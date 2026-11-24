@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
-
+@Configurable
 public class GateSubsystem extends SubsystemBase {
     private final Servo servo;
     private final TelemetryManager telemetry;

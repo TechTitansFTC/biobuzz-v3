@@ -1,6 +1,11 @@
 package org.firstinspires.ftc.teamcode.util;
 
+import com.bylazar.configurables.annotations.Configurable;
+
+@Configurable
 public class PIDController {
+    public static boolean flipKp = false;
+
     private double kp; // Proportional gain
     private double ki; // Integral gain
     private double kd; // Derivative gain
@@ -57,6 +62,8 @@ public class PIDController {
         } else if (currentValue - target > 0) {
             feedforwardTerm = -kf;
         }
+
+        if (flipKp) feedforwardTerm *= -1;
 
         // Calculate the output value
         double output = proportionalTerm + integralTerm + derivativeTerm + feedforwardTerm;
