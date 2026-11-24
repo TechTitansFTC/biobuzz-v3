@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.ScoringSubsystem;
+import org.firstinspires.ftc.teamcode.util.InterpolatingTable;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
 @Configurable
@@ -46,6 +47,9 @@ public class ScoringCommand extends CommandBase {
     private double pollenTurretMotorPower;
     private double previousBearing;
 
+    private final InterpolatingTable rpmTable;
+    private final InterpolatingTable hoodTable;
+
     public ScoringCommand(ScoringSubsystem scoringSubsystem, Follower follower) {
         this.scoringSubsystem = scoringSubsystem;
         this.follower = follower;
@@ -57,6 +61,13 @@ public class ScoringCommand extends CommandBase {
         pollenTurretMotorPower = 0;
 
         previousBearing = 0;
+
+        rpmTable = new InterpolatingTable();
+        hoodTable = new InterpolatingTable();
+
+        rpmTable.put(24.0, 2200.0);
+
+        hoodTable.put(24.0, 0.25);
 
         pollenTurretServoController = new PIDController(POLLEN_TURRET_SERVO_CONTROLLER_KP, POLLEN_TURRET_SERVO_CONTROLLER_KI,
                 POLLEN_TURRET_SERVO_CONTROLLER_KD, POLLEN_TURRET_SERVO_CONTROLLER_KF);
@@ -145,11 +156,10 @@ public class ScoringCommand extends CommandBase {
 
 
     private double POLLEN_TURRET_VELOCITY_MODEL(double distanceToTarget) {
-        return POLLEN_SHOOTER_VELOCITY_MODEL_A * Math.pow(POLLEN_SHOOTER_VELOCITY_MODEL_B, distanceToTarget) +
-                POLLEN_SHOOTER_VELOCITY_MODEL_K;
+        return rpmTable.get(distanceToTarget);
     }
+
     private double HOOD_TURRET_POSITION_MODEL(double distanceToTarget) {
-        return POLLEN_SHOOTER_VELOCITY_MODEL_A * Math.pow(POLLEN_SHOOTER_VELOCITY_MODEL_B, distanceToTarget) +
-                POLLEN_SHOOTER_VELOCITY_MODEL_K;
+        return hoodTable.get(distanceToTarget);
     }
 }

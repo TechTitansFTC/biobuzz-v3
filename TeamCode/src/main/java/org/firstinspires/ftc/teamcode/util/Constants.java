@@ -7,8 +7,6 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 public class Constants {
     // Intake
     public static double INTAKE_MOTOR_POWER = 1;
-    public static double REVERSE_INTAKE_MOTOR_POWER = 1;
-    public static double OUT_TAKE_TIME = 0.1;
     public static double FLOWER_RIGHT_SERVO_DOWN = 0.37;
     public static double FLOWER_RIGHT_SERVO_UP = 0.74;
     public static double FLOWER_LEFT_SERVO_DOWN = 0.37 ;
