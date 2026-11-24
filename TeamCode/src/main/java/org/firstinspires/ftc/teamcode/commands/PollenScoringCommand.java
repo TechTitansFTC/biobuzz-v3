@@ -12,14 +12,12 @@ import static org.firstinspires.ftc.teamcode.util.Constants.POLLEN_TURRET_TAG_RE
 import static org.firstinspires.ftc.teamcode.util.Constants.SHOOTING_TIME;
 import static org.firstinspires.ftc.teamcode.util.Constants.TRANSFER_MOTOR_POWER;
 
-import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ScoringSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.StorageSubsystem;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
 /**

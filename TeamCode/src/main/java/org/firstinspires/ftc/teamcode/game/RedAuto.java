@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode.game;
 
 import static org.firstinspires.ftc.teamcode.util.Constants.APRIL_TAG_ALIGN_DETECTION_TIME;
 import static org.firstinspires.ftc.teamcode.util.Constants.AUTO_INTAKE_TIME;
-import static org.firstinspires.ftc.teamcode.util.Constants.FLOWER_LEFT_SERVO_DOWN;
-import static org.firstinspires.ftc.teamcode.util.Constants.FLOWER_LEFT_SERVO_UP;
 import static org.firstinspires.ftc.teamcode.util.Constants.FLOWER_RIGHT_SERVO_DOWN;
 import static org.firstinspires.ftc.teamcode.util.Constants.FLOWER_RIGHT_SERVO_UP;
 import static org.firstinspires.ftc.teamcode.util.Constants.INTAKE_MOTOR_POWER;
@@ -23,14 +21,11 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
 import org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.PollenScoringCommand;
-import org.firstinspires.ftc.teamcode.commands.ReverseCommand;
-import org.firstinspires.ftc.teamcode.commands.ScoringCommand;
-import org.firstinspires.ftc.teamcode.commands.StorageCommand;
+import org.firstinspires.ftc.teamcode.commands.IntakeCommand;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.FlowerSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ScoringSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.StorageSubsystem;
 import org.firstinspires.ftc.teamcode.util.paths.AutonomousPaths;
 
 @Autonomous(name = "Red Auto", group="Main")
@@ -41,7 +36,7 @@ public class RedAuto extends OpMode {
     PollenScoringCommand scoringCommand;
     FlowerIntakeCommand flowerIntakeCommand;
     FlowerSubsystem flowerSubsystem;
-    StorageCommand storageCommand;
+    IntakeCommand intakeCommand;
     private Follower follower;
     private SequentialCommandGroup autonomousRoutine;
     private AutonomousPaths autonomousPaths;
@@ -85,14 +80,14 @@ public class RedAuto extends OpMode {
         flowerSubsystem = new FlowerSubsystem(hardwareMap, telemetry);
         scoringCommand = new PollenScoringCommand(scoringSubsystem, storageSubsystem, intakeSubsystem);
         flowerIntakeCommand = new FlowerIntakeCommand(flowerSubsystem);
-        storageCommand = new StorageCommand(storageSubsystem, intakeSubsystem);
+        intakeCommand = new IntakeCommand(storageSubsystem, intakeSubsystem);
 
         aprilTagTimer = new ElapsedTime();
         aprilTagTimer.reset();
         autoTimer = new ElapsedTime();
         autoTimer.reset();
 
-        storageCommand.schedule();
+        intakeCommand.schedule();
 
 
 

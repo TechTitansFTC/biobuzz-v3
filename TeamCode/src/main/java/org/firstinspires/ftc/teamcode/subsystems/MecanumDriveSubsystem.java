@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -8,17 +10,20 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
+@Configurable
 public class MecanumDriveSubsystem extends SubsystemBase {
     private final IMU imu;
     private final DcMotor frontLeft, frontRight, backLeft, backRight;
+    public static RevHubOrientationOnRobot.LogoFacingDirection CONTROL_HUB_LOGO_FACING_DIRECTION = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+    public static RevHubOrientationOnRobot.UsbFacingDirection CONTROL_HUB_USB_FACING_DIRECTION = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
     private final Telemetry telemetry;
 
     public MecanumDriveSubsystem(HardwareMap hardwareMap, IMU imu, Telemetry telemetry) {
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeftDrive"); // port 0 motor control hub
-        frontRight = hardwareMap.get(DcMotor.class, "frontRightDrive"); // port 1 motor control hub
-        backLeft = hardwareMap.get(DcMotor.class, "backLeftDrive"); // port 1 motor expansion hub
-        backRight = hardwareMap.get(DcMotor.class, "backRightDrive"); // port 3 motor expansion hub
+        frontRight = hardwareMap.get(DcMotor.class, "frontRightDrive"); // port 3 motor control hub
+        backLeft = hardwareMap.get(DcMotor.class, "backLeftDrive"); // port 1 motor control hub
+        backRight = hardwareMap.get(DcMotor.class, "backRightDrive"); // port 2 motor control hub
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

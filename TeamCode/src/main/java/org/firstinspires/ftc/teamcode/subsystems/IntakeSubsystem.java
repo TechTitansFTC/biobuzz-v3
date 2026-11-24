@@ -1,21 +1,45 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+@Configurable
 public class IntakeSubsystem extends SubsystemBase {
+    public static boolean intakeMotorReversed = false;
+    public static boolean transferMotorReversed = false;
+    public static boolean swapDigitalSensorValues = false;
     private final DcMotor intakeMotor;
+    private final DcMotor transferMotor;
+    private final TelemetryManager telemetry;
+    private final DigitalChannel sensor1;
+    private final DigitalChannel sensor2;
+    private final DigitalChannel sensor3;
+    private final DigitalChannel sensor4;
+    public IntakeSubsystem(HardwareMap hardwareMap, TelemetryManager telemetry) {
+        intakeMotor = hardwareMap.get(DcMotor.class, "intake"); // port 1 motor expansion hub
+        transferMotor = hardwareMap.get(DcMotor.class, "transfer"); // port 0 motor expansion hub
 
-    private final Telemetry telemetry;
+        sensor1 = hardwareMap.get(DigitalChannel.class, "sensor1");
+        sensor2 = hardwareMap.get(DigitalChannel.class, "sensor2");
+        sensor3 = hardwareMap.get(DigitalChannel.class, "sensor3");
+        sensor4 = hardwareMap.get(DigitalChannel.class, "sensor4");
 
-    public IntakeSubsystem(HardwareMap hardwareMap, Telemetry telemetry) {
-        intakeMotor = hardwareMap.get(DcMotor.class, "intake"); // port 2 motor expansion hub
-        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (intakeMotorReversed) {
+            intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
+
+        if (transferMotorReversed) {
+            transferMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
 
         this.telemetry = telemetry;
 
@@ -24,11 +48,39 @@ public class IntakeSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        telemetry.addLine("");
+        telemetry.addLine("Intake/Storage");
         telemetry.addData("Intake Motor Power", getMotorPower());
+        telemetry.addData("Sensor 1", getSensor1());
+        telemetry.addData("Sensor 2", getSensor2());
+        telemetry.addData("Sensor 3", getSensor3());
+        telemetry.addData("Sensor 4", getSensor4());
     }
 
     public void setMotorPower(double power) {
         intakeMotor.setPower(power);
+        transferMotor.setPower(power);
+    }
+
+    public boolean getSensor1() {
+        return flip(sensor1.getState());
+    }
+
+    public boolean getSensor2() {
+        return flip(sensor2.getState());
+    }
+
+    public boolean getSensor3() {
+        return flip(sensor3.getState());
+    }
+
+    public boolean getSensor4() {
+        return flip(sensor4.getState());
+    }
+
+    public boolean flip(boolean variable) {
+        if (swapDigitalSensorValues) return !variable;
+        return variable;
     }
 
     public double getMotorPower() {

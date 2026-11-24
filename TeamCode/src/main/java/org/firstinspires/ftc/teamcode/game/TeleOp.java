@@ -16,12 +16,11 @@ import org.firstinspires.ftc.teamcode.commands.DriveCommand;
 import org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.ReverseCommand;
 import org.firstinspires.ftc.teamcode.commands.PollenScoringCommand;
-import org.firstinspires.ftc.teamcode.commands.StorageCommand;
+import org.firstinspires.ftc.teamcode.commands.IntakeCommand;
 import org.firstinspires.ftc.teamcode.subsystems.FlowerSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ScoringSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.StorageSubsystem;
 import org.firstinspires.ftc.teamcode.util.Constants;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp Main", group="Main")
@@ -33,7 +32,7 @@ public class TeleOp extends OpMode {
     FlowerSubsystem flowerSubsystem;
     DriveCommand driveCommand;
     PollenScoringCommand pollenScoringCommand;
-    StorageCommand storageCommand;
+    IntakeCommand intakeCommand;
     FlowerIntakeCommand flowerIntakeCommand;
     ReverseCommand reverseCommand;
     IMU imu;
@@ -59,13 +58,13 @@ public class TeleOp extends OpMode {
         // Commands
         driveCommand = new DriveCommand(gamepadEx,mecanumDriveSubsystem);
         pollenScoringCommand = new PollenScoringCommand(scoringSubsystem, storageSubsystem, intakeSubsystem);
-        storageCommand = new StorageCommand(storageSubsystem, intakeSubsystem);
+        intakeCommand = new IntakeCommand(storageSubsystem, intakeSubsystem);
         flowerIntakeCommand = new FlowerIntakeCommand(flowerSubsystem);
         reverseCommand = new ReverseCommand(storageSubsystem, intakeSubsystem);
 
         // Bindings
         mecanumDriveSubsystem.setDefaultCommand(driveCommand);
-        storageSubsystem.setDefaultCommand(storageCommand);
+        storageSubsystem.setDefaultCommand(intakeCommand);
         gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_DOWN)
                 .whenPressed(() -> mecanumDriveSubsystem.resetIMU());
         gamepadEx.getGamepadButton(GamepadKeys.Button.A)

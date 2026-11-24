@@ -17,6 +17,7 @@ import static org.firstinspires.ftc.teamcode.util.Constants.TEAM;
 
 import android.util.Size;
 
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -44,50 +45,27 @@ import java.util.List;
 
 public class ScoringSubsystem extends SubsystemBase {
     private final DcMotorEx pollenTurretMotor;
-    private final DcMotorEx nectarTurretMotor;
     private final CRServo pollenTurretServo;
-    private final CRServo nectarTurretServo;
     private final AnalogInput pollenTurretEncoder;
-    private final AnalogInput nectarTurretEncoder;
     private final AprilTagProcessor aprilTag;
     private final VisionPortal pollenTurretCamera;
     private final VoltageSensor battery;
-    private final Telemetry telemetry;
-    private final Follower follower;
-    private double distanceToScore;
+    private final TelemetryManager telemetry;
 
-    // Pollen flywheel velocity control (runs in periodic)
-    private final PIDController shooterController =
-            new PIDController(POLLEN_SHOOTER_KP, POLLEN_SHOOTER_KI, POLLEN_SHOOTER_KD, 0);
-    private final ElapsedTime shooterLoopTimer = new ElapsedTime();
-    private double filteredRpm = 0;
-    private boolean firstShooterUpdate = true;
-    private boolean pollenShooterEnabled = true; // on for the whole match unless toggled off with B
-    private static double POLLEN_SHOOTER_TARGET_RPM_CHANGE = POLLEN_SHOOTER_TARGET_RPM;
-
-    public ScoringSubsystem(HardwareMap hardwareMap, Telemetry telemetry, Follower follower) {
+    public ScoringSubsystem(HardwareMap hardwareMap, TelemetryManager telemetry, Follower follower) {
         this.telemetry = telemetry;
 
-        pollenTurretMotor = hardwareMap.get(DcMotorEx.class, "pollenShooter"); // port 3 motor control hub
-        nectarTurretMotor = hardwareMap.get(DcMotorEx.class, "nectarShooter"); // port 0 motor expansion hub (encoder)
-        pollenTurretServo = hardwareMap.get(CRServo.class, "pollenTurret"); // port 5 servo expansion hub
-        nectarTurretServo = hardwareMap.get(CRServo.class, "nectarTurret"); // port 5 servo control hub
+        pollenTurretMotor = hardwareMap.get(DcMotorEx.class, "pollenShooter");
+        pollenTurretServo = hardwareMap.get(CRServo.class, "pollenTurret");
 
-        pollenTurretEncoder = hardwareMap.get(AnalogInput.class, "pollenEncoder"); // 0 analog control hub
-        nectarTurretEncoder = hardwareMap.get(AnalogInput.class, "nectarEncoder"); // 0 analog expansion hub
+        pollenTurretEncoder = hardwareMap.get(AnalogInput.class, "pollenEncoder");
 
         pollenTurretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        nectarTurretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        // Let the flywheel coast down instead of braking it hard (same as ShootingTest).
         pollenTurretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         battery = hardwareMap.voltageSensor.iterator().next();
-        this.follower = follower;
-        distanceToScore = getDistanceToScore(follower);
-
         aprilTag = new AprilTagProcessor.Builder().setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES).build();
 
-        // Same camera settings as CameraTest, where tag detection works.
         pollenTurretCamera = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "pollenTurretCamera"))
                 .setCameraResolution(new Size(1280, 800))
@@ -100,11 +78,9 @@ public class ScoringSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        updatePollenShooter();
-        distanceToScore = getDistanceToScore(follower);
-
+        telemetry.addLine("");
+        telemetry.addLine("Scoring");
         telemetry.addData("Camera bearing", getBearing());
-        telemetry.addData("Pollen shooter on (B)", pollenShooterEnabled);
         telemetry.addData("Pollen shooter RPM", filteredRpm);
         telemetry.addData("Pollen shooter target", POLLEN_SHOOTER_TARGET_RPM);
         telemetry.addData("Pollen shooter at speed", isPollenShooterAtSpeed());

@@ -6,7 +6,6 @@ import static org.firstinspires.ftc.teamcode.util.Constants.REVERSE_TRANSFER_MOT
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.StorageSubsystem;
 
 public class ReverseCommand extends CommandBase {
     private final StorageSubsystem storageSubsystem;
