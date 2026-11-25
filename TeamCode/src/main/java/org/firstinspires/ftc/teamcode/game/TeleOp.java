@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.game;
 
+import static org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand.FLOWER_SERVO_UP;
+import static org.firstinspires.ftc.teamcode.commands.ShootCommand.GATE_CLOSE_POSITION;
 import static org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem.CONTROL_HUB_LOGO_FACING_DIRECTION;
 import static org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem.CONTROL_HUB_USB_FACING_DIRECTION;
 import static org.firstinspires.ftc.teamcode.util.PoseStorage.autonomousEndPose;
@@ -19,7 +21,9 @@ import org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.ReverseCommand;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.ScoringCommand;
+import org.firstinspires.ftc.teamcode.commands.ShootCommand;
 import org.firstinspires.ftc.teamcode.subsystems.FlowerSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ScoringSubsystem;
@@ -36,10 +40,12 @@ public class TeleOp extends OpMode {
     ScoringCommand scoringCommand;
     FlowerIntakeCommand flowerIntakeCommand;
     ReverseCommand reverseCommand;
+    ShootCommand shootCommand;
     IMU imu;
     GamepadEx gamepadEx;
     Follower follower;
     TelemetryManager telemetryManager;
+    GateSubsystem gateSubsystem;
     @Override
     public void init () {
         // Objects
@@ -57,6 +63,7 @@ public class TeleOp extends OpMode {
         intakeSubsystem = new IntakeSubsystem(hardwareMap, telemetryManager);
         scoringSubsystem = new ScoringSubsystem(hardwareMap, telemetryManager);
         flowerSubsystem = new FlowerSubsystem(hardwareMap, telemetryManager);
+        gateSubsystem = new GateSubsystem(hardwareMap, telemetryManager);
 
         // Commands
         driveCommand = new DriveCommand(gamepadEx, mecanumDriveSubsystem);
@@ -64,13 +71,16 @@ public class TeleOp extends OpMode {
         flowerIntakeCommand = new FlowerIntakeCommand(flowerSubsystem);
         reverseCommand = new ReverseCommand(intakeSubsystem);
         scoringCommand = new ScoringCommand(scoringSubsystem, follower);
+        shootCommand = new ShootCommand(gateSubsystem);
 
         // Bindings
         mecanumDriveSubsystem.setDefaultCommand(driveCommand);
+        scoringSubsystem.setDefaultCommand(scoringCommand);
+        intakeSubsystem.setDefaultCommand(intakeCommand);
         gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_DOWN)
                 .whenPressed(() -> mecanumDriveSubsystem.resetIMU());
         gamepadEx.getGamepadButton(GamepadKeys.Button.A)
-                .whenPressed(scoringCommand);
+                .whenPressed(shootCommand);
         gamepadEx.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER)
                 .whenHeld(flowerIntakeCommand);
         gamepadEx.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER)
@@ -79,6 +89,12 @@ public class TeleOp extends OpMode {
                 .whenPressed(() -> PoseStorage.TEAM = "B");
         gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT)
                 .whenPressed(() -> PoseStorage.TEAM = "R");
+    }
+
+    @Override
+    public void start() {
+        flowerSubsystem.setServoPosition(FLOWER_SERVO_UP);
+        gateSubsystem.setGatePosition(GATE_CLOSE_POSITION);
     }
 
     @Override

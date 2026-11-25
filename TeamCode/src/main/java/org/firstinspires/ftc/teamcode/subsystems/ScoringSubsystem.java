@@ -122,6 +122,7 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public void setPollenTurretShooterPower(double power) {
+        leftPollenTurretMotor.setPower(power);
         rightPollenTurretMotor.setPower(power);
     }
 

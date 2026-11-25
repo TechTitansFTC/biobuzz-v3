@@ -14,7 +14,7 @@ public class FlowerSubsystem extends SubsystemBase {
     public FlowerSubsystem(HardwareMap hardwareMap, TelemetryManager telemetry) {
         this.telemetry = telemetry;
 
-        servo = hardwareMap.get(Servo.class, "flowerIntake");
+        servo = hardwareMap.get(Servo.class, "flower"); // Expansion hub servo port 3
 
         register();
     }

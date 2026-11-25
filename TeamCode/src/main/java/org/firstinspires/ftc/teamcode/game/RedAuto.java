@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode.game;
 import static org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand.FLOWER_SERVO_DOWN;
 import static org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand.FLOWER_SERVO_UP;
 import static org.firstinspires.ftc.teamcode.commands.IntakeCommand.INTAKE_MOTOR_POWER;
+import static org.firstinspires.ftc.teamcode.commands.ShootCommand.GATE_CLOSE_POSITION;
 import static org.firstinspires.ftc.teamcode.util.paths.PathChainBuilder.buildPathChain;
 
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -20,8 +22,10 @@ import com.seattlesolvers.solverslib.command.CommandScheduler;
 import org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.ScoringCommand;
+import org.firstinspires.ftc.teamcode.commands.ShootCommand;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.FlowerSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ScoringSubsystem;
 import org.firstinspires.ftc.teamcode.util.PoseStorage;
@@ -38,8 +42,10 @@ public class RedAuto extends OpMode {
     ScoringSubsystem scoringSubsystem;
     FlowerIntakeCommand flowerIntakeCommand;
     FlowerSubsystem flowerSubsystem;
+    GateSubsystem gateSubsystem;
     IntakeCommand intakeCommand;
     ScoringCommand scoringCommand;
+    ShootCommand shootCommand;
     private Follower follower;
     private AutonomousPaths autonomousPaths;
     private ElapsedTime autoTimer;
@@ -77,9 +83,11 @@ public class RedAuto extends OpMode {
         intakeSubsystem = new IntakeSubsystem(hardwareMap, telemetryManager);
         scoringSubsystem = new ScoringSubsystem(hardwareMap, telemetryManager);
         flowerSubsystem = new FlowerSubsystem(hardwareMap, telemetryManager);
+        gateSubsystem = new GateSubsystem(hardwareMap, telemetryManager);
         scoringCommand = new ScoringCommand(scoringSubsystem, follower);
         flowerIntakeCommand = new FlowerIntakeCommand(flowerSubsystem);
         intakeCommand = new IntakeCommand(intakeSubsystem);
+        shootCommand = new ShootCommand(gateSubsystem);
 
         aprilTagTimer = new ElapsedTime();
         aprilTagTimer.reset();
@@ -87,15 +95,14 @@ public class RedAuto extends OpMode {
         autoTimer.reset();
 
         intakeCommand.schedule();
-
-
-
+        scoringCommand.schedule();
     }
 
     @Override
     public void start() {
         currentState = AutoState.START;
         flowerSubsystem.setServoPosition(FLOWER_SERVO_UP);
+        gateSubsystem.setGatePosition(GATE_CLOSE_POSITION);
         autoTimer.reset();
     }
 
@@ -189,10 +196,10 @@ public class RedAuto extends OpMode {
                     hasPollen = false;
                     knowTip = false;
                     hasShot = true;
-                    CommandScheduler.getInstance().schedule(scoringCommand);
+                    CommandScheduler.getInstance().schedule(shootCommand);
                     isShooting = true;
                 }
-                if (!CommandScheduler.getInstance().isScheduled(scoringCommand)) {
+                if (!CommandScheduler.getInstance().isScheduled(shootCommand)) {
                     isShooting = false;
                     currentState = AutoState.IDLE;
                 }
@@ -269,7 +276,7 @@ public class RedAuto extends OpMode {
                 }
                 break;
         }
-
+        PoseStorage.autonomousEndPose = follower.pose();
         telemetry.addData("", "");
         telemetry.addData("State", currentState);
         telemetry.addData("tip", tip);

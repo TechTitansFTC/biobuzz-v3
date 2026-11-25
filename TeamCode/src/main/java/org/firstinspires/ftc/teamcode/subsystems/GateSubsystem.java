@@ -12,7 +12,7 @@ public class GateSubsystem extends SubsystemBase {
     private final TelemetryManager telemetry;
 
     public GateSubsystem(HardwareMap hardwareMap, TelemetryManager telemetry) {
-        servo = hardwareMap.get(Servo.class, "gate");
+        servo = hardwareMap.get(Servo.class, "gate"); // expansion servo port 1
 
         this.telemetry = telemetry;
     }

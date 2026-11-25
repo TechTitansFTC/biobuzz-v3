@@ -19,9 +19,9 @@ public class PathChainBuilder {
         AutonomousPaths autonomousPaths = new AutonomousPaths();
 
         return Paths.line(startPose, endPose)
-                .linear(startPose, endPose)
-                .with(
-                        Constants.foresightConfig.maxPathSpeed.at(velocityConstraint));
+                .linear(startPose, endPose);
+//                .with(
+//                        Constants.foresightConfig.maxPathSpeed.at(velocityConstraint));
     }
 
     public static Path buildPathChain(double[] startPosition, double[] endPosition, double[] controlPoint) {

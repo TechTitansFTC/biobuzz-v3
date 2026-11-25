@@ -32,8 +32,8 @@ public class IntakeSubsystem extends SubsystemBase {
         sensor3 = hardwareMap.get(DigitalChannel.class, "sensor3");
         sensor4 = hardwareMap.get(DigitalChannel.class, "sensor4");
 
-        leftIntakePivotServo = hardwareMap.get(Servo.class, "leftIntakePivot");
-        rightIntakePivotServo = hardwareMap.get(Servo.class, "rightIntakePivot");
+        leftIntakePivotServo = hardwareMap.get(Servo.class, "leftIntakePivot"); //
+        rightIntakePivotServo = hardwareMap.get(Servo.class, "rightIntakePivot"); // port 5 servo expansion hub
 
         if (intakeMotorReversed) {
             intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -79,7 +79,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public boolean getSensor4() {
-        return flip(sensor4.getState());
+g        return flip(sensor4.getState());
     }
 
     public boolean flip(boolean variable) {

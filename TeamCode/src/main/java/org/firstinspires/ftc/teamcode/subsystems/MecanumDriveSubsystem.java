@@ -20,10 +20,10 @@ public class MecanumDriveSubsystem extends SubsystemBase {
     private final Telemetry telemetry;
 
     public MecanumDriveSubsystem(HardwareMap hardwareMap, IMU imu, Telemetry telemetry) {
-        frontLeft = hardwareMap.get(DcMotor.class, "frontLeftDrive"); // port 0 motor control hub
-        frontRight = hardwareMap.get(DcMotor.class, "frontRightDrive"); // port 3 motor control hub
-        backLeft = hardwareMap.get(DcMotor.class, "backLeftDrive"); // port 1 motor control hub
-        backRight = hardwareMap.get(DcMotor.class, "backRightDrive"); // port 2 motor control hub
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft"); // port 0 motor control hub
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight"); // port 3 motor control hub
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft"); // port 1 motor control hub
+        backRight = hardwareMap.get(DcMotor.class, "backRight"); // port 2 motor control hub
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
