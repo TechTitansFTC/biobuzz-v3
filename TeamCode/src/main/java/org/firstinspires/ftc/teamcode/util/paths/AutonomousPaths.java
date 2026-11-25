@@ -3,14 +3,16 @@ package org.firstinspires.ftc.teamcode.util.paths;
 import java.util.Arrays;
 
 public class AutonomousPaths {
-    public static double[] initial = new double[]{54.22, 9, 90}; // x, y, heading
+    public static double robotWidth = 12.4409;
+    public static double robotHeight = 17.2;
+    public static double[] initial = new double[]{48 + (robotWidth / 2), robotHeight / 2, 90}; // x, y, heading
     public static double[] down = new double[]{58, 33, 90};
     public static double[] up = new double[]{58, 111, 270};
     public static double[] flowerUp1 = new double[]{48, 115, 90};
     public static double[] flowerUp2 = new double[]{48, 133, 90};
     public static double[] flowerDown1 = new double[]{26, 48, 180};
     public static double[] flowerDown2 = new double[]{12.5, 48, 180};
-    public static double[] garden1 = new double[]{23, 9, 180};
+    public static double[] garden1 = new double[]{23, 9, 200};
     public static double[] garden2 = new double[]{10, 9, 180};
     public static double[] park = new double[]{9, 95, 90};
     public static double[] upDownControl = new double[]{80, 72, 0};

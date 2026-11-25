@@ -9,6 +9,7 @@ import static org.firstinspires.ftc.teamcode.util.PoseStorage.autonomousEndPose;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.math.Pose;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -90,6 +91,8 @@ public class TeleOp extends OpMode {
                 .whenPressed(() -> PoseStorage.TEAM = "B");
         gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT)
                 .whenPressed(() -> PoseStorage.TEAM = "R");
+        gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_UP)
+                .whenPressed(() -> follower.setPose(new Pose(6.23, )))
     }
 
     @Override
