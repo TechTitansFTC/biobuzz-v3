@@ -31,6 +31,7 @@ import org.firstinspires.ftc.teamcode.util.PoseStorage;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp Main")
 public class TeleOp extends OpMode {
+    // TODO: Add a follower reset in the corner of the field
     MecanumDriveSubsystem mecanumDriveSubsystem;
     IntakeSubsystem intakeSubsystem;
     ScoringSubsystem scoringSubsystem;

@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand.FLOWER
 import static org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand.FLOWER_SERVO_UP;
 import static org.firstinspires.ftc.teamcode.commands.IntakeCommand.INTAKE_MOTOR_POWER;
 import static org.firstinspires.ftc.teamcode.commands.ShootCommand.GATE_CLOSE_POSITION;
+import static org.firstinspires.ftc.teamcode.util.paths.AutonomousPaths.*;
 import static org.firstinspires.ftc.teamcode.util.paths.PathChainBuilder.buildPathChain;
 
 import java.util.Arrays;
@@ -29,11 +30,11 @@ import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ScoringSubsystem;
 import org.firstinspires.ftc.teamcode.util.PoseStorage;
-import org.firstinspires.ftc.teamcode.util.paths.AutonomousPaths;
 
 @Configurable
 @Autonomous(name = "Red Auto", group="Main")
 public class RedAuto extends OpMode {
+    // TODO: Shoot and go to closest april tag check position without going near the hive repeatedly
     public static double PARK_TIME = 5;
     public static double SHOOTER_SPIN_UP_TIME = 0;
     public static double AUTO_INTAKE_TIME = 1;
@@ -47,7 +48,6 @@ public class RedAuto extends OpMode {
     ScoringCommand scoringCommand;
     ShootCommand shootCommand;
     private Follower follower;
-    private AutonomousPaths autonomousPaths;
     private ElapsedTime autoTimer;
     boolean isShooting = false;
     private boolean tip = false; // down, true is up (down means down is correct scoring position, up means up is correct scoring position)
@@ -70,15 +70,14 @@ public class RedAuto extends OpMode {
     TelemetryManager telemetryManager;
     @Override
     public void init() {
-        autonomousPaths = new AutonomousPaths();
         PoseStorage.TEAM = "R";
         telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
 
         follower = Constants.create(hardwareMap);
-        follower.setX(autonomousPaths.getInitial()[0]);
-        follower.setY(autonomousPaths.getInitial()[1]);
-        follower.setHeading(Math.toRadians(autonomousPaths.getInitial()[2]));
-        currPos = autonomousPaths.getInitial();
+        follower.setX(initial[0]);
+        follower.setY(initial[1]);
+        follower.setHeading(Math.toRadians(initial[2]));
+        currPos = initial;
 
         intakeSubsystem = new IntakeSubsystem(hardwareMap, telemetryManager);
         scoringSubsystem = new ScoringSubsystem(hardwareMap, telemetryManager);
@@ -112,22 +111,22 @@ public class RedAuto extends OpMode {
         CommandScheduler.getInstance().run();
         switch (currentState) {
             case START:
-                follower.follow(buildPathChain(autonomousPaths.getInitial(), autonomousPaths.getDown()));
+                follower.follow(buildPathChain(initial, down));
                 currentState = AutoState.MOVING;
-                currPos = autonomousPaths.getDown();
+                currPos = down;
                 break;
             case IDLE:
                 if (30 - autoTimer.seconds() <= PARK_TIME) {
-                    if (Arrays.equals(currPos, autonomousPaths.getDown())) {
-                        follower.follow(buildPathChain(currPos, autonomousPaths.getPark(), autonomousPaths.getDownParkControl()));
+                    if (Arrays.equals(currPos, down)) {
+                        follower.follow(buildPathChain(currPos, park, downParkControl));
                     } else {
-                        follower.follow(buildPathChain(currPos, autonomousPaths.getPark()));
+                        follower.follow(buildPathChain(currPos, park));
                     }
-                    currPos = autonomousPaths.getPark();
+                    currPos = park;
                     currentState = AutoState.PARK;
                     break;
                 }
-                if (Arrays.equals(currPos, autonomousPaths.getFlowerUp1()) || Arrays.equals(currPos, autonomousPaths.getFlowerDown1()) || Arrays.equals(currPos, autonomousPaths.getGarden1())) {
+                if (Arrays.equals(currPos, flowerUp1) || Arrays.equals(currPos, flowerDown1) || Arrays.equals(currPos, garden1)) {
                     currentState = AutoState.INTAKE_1;
                     break;
                 }
@@ -138,18 +137,18 @@ public class RedAuto extends OpMode {
                         currentState = AutoState.SHOOT;
                         break;
                     } else {
-                        if (Arrays.equals(currPos, autonomousPaths.getDown()) || Arrays.equals(currPos, autonomousPaths.getUp())) {
+                        if (Arrays.equals(currPos, down) || Arrays.equals(currPos, up)) {
                             visited = true;
                             aprilTagTimer.reset();
                             currentState = AutoState.CHECK_TIP;
                             break;
                         } else {
-                            if (Arrays.equals(currPos, autonomousPaths.getFlowerUp1()) || Arrays.equals(currPos, autonomousPaths.getFlowerUp2())) {
-                                follower.follow(buildPathChain(currPos, autonomousPaths.getUp()));
-                                currPos = autonomousPaths.getUp();
+                            if (Arrays.equals(currPos, flowerUp1) || Arrays.equals(currPos, flowerUp2)) {
+                                follower.follow(buildPathChain(currPos, up));
+                                currPos = up;
                             } else {
-                                follower.follow(buildPathChain(currPos, autonomousPaths.getDown()));
-                                currPos = autonomousPaths.getDown();
+                                follower.follow(buildPathChain(currPos, down));
+                                currPos = down;
                             }
                             currentState = AutoState.MOVING;
                         }
@@ -158,34 +157,34 @@ public class RedAuto extends OpMode {
                 }
                 if (garden) {
                     garden = false;
-                    if (Arrays.equals(currPos, autonomousPaths.getUp())) {
-                        follower.follow(buildPathChain(currPos, autonomousPaths.getGarden1(), autonomousPaths.getUpGardenControl()));
+                    if (Arrays.equals(currPos, up)) {
+                        follower.follow(buildPathChain(currPos, garden1, upGardenControl));
                     } else {
-                        follower.follow(buildPathChain(currPos, autonomousPaths.getGarden1()));
+                        follower.follow(buildPathChain(currPos, garden1));
                     }
-                    currPos = autonomousPaths.getGarden1();
+                    currPos = garden1;
                     currentState = AutoState.MOVING;
                     break;
                 }
                 if (flowerUp) {
                     flowerUp = false;
-                    if (Arrays.equals(currPos, autonomousPaths.getDown())) {
-                        follower.follow(buildPathChain(currPos, autonomousPaths.getFlowerUp1(), autonomousPaths.getDownFlowerUpControl()));
+                    if (Arrays.equals(currPos, down)) {
+                        follower.follow(buildPathChain(currPos, flowerUp1, downFlowerUpControl));
                     } else {
-                        follower.follow(buildPathChain(currPos, autonomousPaths.getFlowerUp1()));
+                        follower.follow(buildPathChain(currPos, flowerUp1));
                     }
-                    currPos = autonomousPaths.getFlowerUp1();
+                    currPos = flowerUp1;
                     currentState = AutoState.MOVING;
                     break;
                 }
                 if (flowerDown) {
                     flowerDown = false;
-                    if (Arrays.equals(currPos, autonomousPaths.getUp())) {
-                        follower.follow(buildPathChain(currPos, autonomousPaths.getFlowerDown1(), autonomousPaths.getUpFlowerDownControl()));
+                    if (Arrays.equals(currPos, up)) {
+                        follower.follow(buildPathChain(currPos, flowerDown1, upFlowerDownControl));
                     } else {
-                        follower.follow(buildPathChain(currPos, autonomousPaths.getFlowerDown1()));
+                        follower.follow(buildPathChain(currPos, flowerDown1));
                     }
-                    currPos = autonomousPaths.getFlowerDown1();
+                    currPos = flowerDown1;
                     currentState = AutoState.MOVING;
                     break;
                 }
@@ -208,22 +207,22 @@ public class RedAuto extends OpMode {
 //                intakeSubsystem.setWheelPivotPosition(intakeWheelPivotPositionUp);
 //                intakeSubsystem.setRampPivotPosition(intakeRampPivotPositionUp);
                 intakeSubsystem.setMotorPower(INTAKE_MOTOR_POWER);
-                if (Arrays.equals(currPos, autonomousPaths.getFlowerDown1()) || Arrays.equals(currPos, autonomousPaths.getFlowerUp1())) {
+                if (Arrays.equals(currPos, flowerDown1) || Arrays.equals(currPos, flowerUp1)) {
                     flowerSubsystem.setServoPosition(FLOWER_SERVO_DOWN);
 //                    flowerSubsystem.setLeftServoPosition(FLOWER_LEFT_SERVO_DOWN);
                 } else {
                     flowerSubsystem.setServoPosition(FLOWER_SERVO_UP);
 //                    flowerSubsystem.setLeftServoPosition(FLOWER_LEFT_SERVO_UP);
                 }
-                if (Arrays.equals(currPos, autonomousPaths.getFlowerDown1())) {
-                    follower.follow(buildPathChain(currPos, autonomousPaths.getFlowerDown2()));
-                    currPos = autonomousPaths.getFlowerDown2();
-                } else if (Arrays.equals(currPos, autonomousPaths.getFlowerUp1())) {
-                    follower.follow(buildPathChain(currPos, autonomousPaths.getFlowerUp2()));
-                    currPos = autonomousPaths.getFlowerUp2();
-                } else if (Arrays.equals(currPos, autonomousPaths.getGarden1())) {
-                    follower.follow(buildPathChain(currPos, autonomousPaths.getGarden2()));
-                    currPos = autonomousPaths.getGarden2();
+                if (Arrays.equals(currPos, flowerDown1)) {
+                    follower.follow(buildPathChain(currPos, flowerDown2));
+                    currPos = flowerDown2;
+                } else if (Arrays.equals(currPos, flowerUp1)) {
+                    follower.follow(buildPathChain(currPos, flowerUp2));
+                    currPos = flowerUp2;
+                } else if (Arrays.equals(currPos, garden1)) {
+                    follower.follow(buildPathChain(currPos, garden2));
+                    currPos = garden2;
                 }
                 currentState = AutoState.INTAKE_2;
                 intakeTime = autoTimer.seconds();
@@ -245,24 +244,24 @@ public class RedAuto extends OpMode {
                 tipCheckedAtAll = true;
                 boolean tagVisible = scoringSubsystem.getBearing() != 361.0;
 
-                if (Arrays.equals(currPos, autonomousPaths.getDown())) {
+                if (Arrays.equals(currPos, down)) {
                     if (tagVisible) {
                         tip = false;
                         knowTip = true;
                         currentState = AutoState.IDLE;
                     } else if (aprilTagTimer.seconds() >= APRIL_TAG_ALIGN_DETECTION_TIME) {
-                        follower.follow(buildPathChain(currPos, autonomousPaths.getUp(), autonomousPaths.getUpDownControl()));
-                        currPos = autonomousPaths.getUp();
+                        follower.follow(buildPathChain(currPos, up, upDownControl));
+                        currPos = up;
                         currentState = AutoState.MOVING;
                     }
-                } else if (Arrays.equals(currPos, autonomousPaths.getUp())) {
+                } else if (Arrays.equals(currPos, up)) {
                     if (tagVisible) {
                         tip = true;
                         knowTip = true;
                         currentState = AutoState.IDLE;
                     } else if (aprilTagTimer.seconds() >= APRIL_TAG_ALIGN_DETECTION_TIME) {
-                        follower.follow(buildPathChain(currPos, autonomousPaths.getDown(), autonomousPaths.getUpDownControl()));
-                        currPos = autonomousPaths.getDown();
+                        follower.follow(buildPathChain(currPos, down, upDownControl));
+                        currPos = down;
                         currentState = AutoState.MOVING;
                     }
                 } else {
@@ -286,7 +285,7 @@ public class RedAuto extends OpMode {
         telemetry.addData("garden", garden);
         telemetry.addData("hasPollen", hasPollen);
         telemetry.addData("doneWithFirstMove", doneWithFirstMove);
-        telemetry.addData("currPos", autonomousPaths.getPose(currPos));
+        telemetry.addData("currPos", getPose(currPos));
         telemetry.addData("lastDetectedapriltag", detectedAprilTag);
         telemetry.addData("hasShot", hasShot);
         telemetry.addData("tipChecked", tipCheckedAtAll);
