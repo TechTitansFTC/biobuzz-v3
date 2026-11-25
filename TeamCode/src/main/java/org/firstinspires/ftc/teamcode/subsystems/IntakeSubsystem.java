@@ -79,7 +79,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public boolean getSensor4() {
-g        return flip(sensor4.getState());
+        return flip(sensor4.getState());
     }
 
     public boolean flip(boolean variable) {
