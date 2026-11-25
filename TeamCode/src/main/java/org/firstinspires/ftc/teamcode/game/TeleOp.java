@@ -5,6 +5,8 @@ import static org.firstinspires.ftc.teamcode.commands.ShootCommand.GATE_CLOSE_PO
 import static org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem.CONTROL_HUB_LOGO_FACING_DIRECTION;
 import static org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem.CONTROL_HUB_USB_FACING_DIRECTION;
 import static org.firstinspires.ftc.teamcode.util.PoseStorage.autonomousEndPose;
+import static org.firstinspires.ftc.teamcode.util.paths.AutonomousPaths.robotHeight;
+import static org.firstinspires.ftc.teamcode.util.paths.AutonomousPaths.robotWidth;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -32,7 +34,6 @@ import org.firstinspires.ftc.teamcode.util.PoseStorage;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp Main")
 public class TeleOp extends OpMode {
-    // TODO: Add a follower reset in the corner of the field
     MecanumDriveSubsystem mecanumDriveSubsystem;
     IntakeSubsystem intakeSubsystem;
     ScoringSubsystem scoringSubsystem;
@@ -92,7 +93,7 @@ public class TeleOp extends OpMode {
         gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT)
                 .whenPressed(() -> PoseStorage.TEAM = "R");
         gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_UP)
-                .whenPressed(() -> follower.setPose(new Pose(6.23, )))
+                .whenPressed(() -> follower.setPose(new Pose(robotWidth / 2, robotHeight / 2, Math.toRadians(90))));
     }
 
     @Override

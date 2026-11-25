@@ -35,6 +35,7 @@ import org.firstinspires.ftc.teamcode.util.PoseStorage;
 @Autonomous(name = "Red Auto", group="Main")
 public class RedAuto extends OpMode {
     // TODO: Shoot and go to closest april tag check position without going near the hive repeatedly
+    // TODO: Ground intake pollen when done
     public static double PARK_TIME = 5;
     public static double SHOOTER_SPIN_UP_TIME = 0;
     public static double AUTO_INTAKE_TIME = 1;
