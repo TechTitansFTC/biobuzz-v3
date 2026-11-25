@@ -101,12 +101,14 @@ public class TeleOp extends OpMode {
     public void loop () {
         CommandScheduler.getInstance().run();
         follower.update();
+        autonomousEndPose = follower.pose();
         telemetry.update();
         gamepadEx.readButtons();
     }
 
     @Override
     public void stop () {
+        autonomousEndPose = follower.pose();
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().reset();
     }
