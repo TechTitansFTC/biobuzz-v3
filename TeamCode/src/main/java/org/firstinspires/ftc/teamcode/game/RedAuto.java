@@ -19,6 +19,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.skeletonarmy.marrow.weaver.PathConfig;
+import com.skeletonarmy.marrow.weaver.Weaver;
 
 import org.firstinspires.ftc.teamcode.commands.FlowerIntakeCommand;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommand;
@@ -34,7 +36,6 @@ import org.firstinspires.ftc.teamcode.util.PoseStorage;
 @Configurable
 @Autonomous(name = "Red Auto", group="Main")
 public class RedAuto extends OpMode {
-    // TODO: Shoot and go to closest april tag check position without going near the hive repeatedly
     // TODO: Ground intake pollen when done
     public static double PARK_TIME = 5;
     public static double SHOOTER_SPIN_UP_TIME = 0;
@@ -79,6 +80,10 @@ public class RedAuto extends OpMode {
         follower.setY(initial[1]);
         follower.setHeading(Math.toRadians(initial[2]));
         currPos = initial;
+        Weaver.setConfig(new PathConfig()
+                .intakeWidth(robotWidth)
+                .robotWidth(robotWidth)
+                .robotHeight(robotHeight));
 
         intakeSubsystem = new IntakeSubsystem(hardwareMap, telemetryManager);
         scoringSubsystem = new ScoringSubsystem(hardwareMap, telemetryManager);

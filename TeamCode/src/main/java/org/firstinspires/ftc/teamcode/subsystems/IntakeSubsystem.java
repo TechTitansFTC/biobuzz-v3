@@ -11,6 +11,7 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 @Configurable
 public class IntakeSubsystem extends SubsystemBase {
+    // TODO: Add limelight 3A
     public static boolean intakeMotorReversed = false;
     public static boolean transferMotorReversed = false;
     public static boolean swapDigitalSensorValues = false;
