@@ -6,7 +6,7 @@ import com.seattlesolvers.solverslib.command.CommandBase;
 import org.firstinspires.ftc.teamcode.subsystems.FlowerSubsystem;
 
 @Configurable
-public class FlowerIntakeCommand extends CommandBase {
+public class FlowerIntakeCommand extends CommandBase { // TODO: increase intake pivot value when flower intake is down
     private final FlowerSubsystem flowerSubsystem;
     public static double FLOWER_SERVO_DOWN = 0.2;
     public static double FLOWER_SERVO_UP = 0.5;
