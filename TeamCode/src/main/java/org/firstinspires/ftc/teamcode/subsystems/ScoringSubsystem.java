@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.util.PoseStorage.TEAM;
 
 import android.util.Size;
 
+import com.bylazar.camerastream.PanelsCameraStream;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -22,6 +23,7 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.util.PanelsFrameSource;
 import org.firstinspires.ftc.teamcode.util.PoseStorage;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagClusterDetection;
@@ -89,12 +91,16 @@ public class ScoringSubsystem extends SubsystemBase {
         battery = hardwareMap.voltageSensor.iterator().next();
         aprilTag = new AprilTagProcessor.Builder().setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES).build();
 
+        PanelsFrameSource panelsFrames = new PanelsFrameSource();
         pollenTurretCamera = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "pollenTurretCamera"))
                 .setCameraResolution(new Size(1280, 800))
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .addProcessor(aprilTag)
+                .addProcessor(panelsFrames)
                 .build();
+
+        PanelsCameraStream.INSTANCE.startStream(panelsFrames, 15);
 
         register();
     }
@@ -238,5 +244,10 @@ public class ScoringSubsystem extends SubsystemBase {
 
     public double getDistanceToTarget() {
         return distanceToTarget;
+    }
+
+    public void stopCamera() {
+        PanelsCameraStream.INSTANCE.stopStream();
+        pollenTurretCamera.close();
     }
 }

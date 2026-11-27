@@ -14,14 +14,14 @@ import org.firstinspires.ftc.teamcode.util.PIDController;
 @Configurable
 public class ScoringCommand extends CommandBase {
     public static double RETAIN_BEARING_TIME = 0.35; // seconds
-    public static double POLLEN_TURRET_SERVO_CONTROLLER_KP = 0.0007;
-    public static double POLLEN_TURRET_SERVO_CONTROLLER_KI = 0.0;
-    public static double POLLEN_TURRET_SERVO_CONTROLLER_KD = 0.0000004;
-    public static double POLLEN_TURRET_SERVO_CONTROLLER_KF = 0.06;
-    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KP = 0.001;
-    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KI = 0.0;
-    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KD = 0.004;
-    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KF = 0.06;
+    public static double POLLEN_TURRET_SERVO_CONTROLLER_KP = 0;
+    public static double POLLEN_TURRET_SERVO_CONTROLLER_KI = 0;
+    public static double POLLEN_TURRET_SERVO_CONTROLLER_KD = 0;
+    public static double POLLEN_TURRET_SERVO_CONTROLLER_KF = 0;
+    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KP = 0;
+    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KI = 0;
+    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KD = 0;
+    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KF = 0;
     public static double TARGET_X_RED = 55.5;
     public static double TARGET_X_BLUE = 84;
     public static double TARGET_Y_DOWN = 55;
@@ -149,6 +149,7 @@ public class ScoringCommand extends CommandBase {
     public void end(boolean interrupted) {
         scoringSubsystem.setPollenTurretServoPower(0);
         scoringSubsystem.setPollenTurretShooterPower(0);
+        scoringSubsystem.stopCamera();
     }
 
 

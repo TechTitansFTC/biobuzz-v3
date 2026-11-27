@@ -5,10 +5,13 @@ import static org.firstinspires.ftc.teamcode.commands.ShootCommand.GATE_CLOSE_PO
 import static org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem.CONTROL_HUB_LOGO_FACING_DIRECTION;
 import static org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem.CONTROL_HUB_USB_FACING_DIRECTION;
 import static org.firstinspires.ftc.teamcode.util.PoseStorage.autonomousEndPose;
+import static org.firstinspires.ftc.teamcode.util.paths.AutonomousPaths.robotHeight;
+import static org.firstinspires.ftc.teamcode.util.paths.AutonomousPaths.robotWidth;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.math.Pose;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -89,6 +92,8 @@ public class TeleOp extends OpMode {
                 .whenPressed(() -> PoseStorage.TEAM = "B");
         gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT)
                 .whenPressed(() -> PoseStorage.TEAM = "R");
+        gamepadEx.getGamepadButton(GamepadKeys.Button.DPAD_UP)
+                .whenPressed(() -> follower.setPose(new Pose(robotWidth / 2, robotHeight / 2, Math.toRadians(90))));
     }
 
     @Override
@@ -102,11 +107,13 @@ public class TeleOp extends OpMode {
         CommandScheduler.getInstance().run();
         follower.update();
         telemetryManager.update();
+        autonomousEndPose = follower.pose();
         gamepadEx.readButtons();
     }
 
     @Override
     public void stop () {
+        autonomousEndPose = follower.pose();
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().reset();
     }

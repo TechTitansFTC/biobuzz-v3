@@ -40,6 +40,11 @@ public class PIDController {
         return target;
     }
 
+    public void reset() {
+        integral = 0.0;
+        previousError = 0.0;
+    }
+
     public double calculateOutput(double currentValue, double deltaTime) {
         double error = target - currentValue;
 
