@@ -60,12 +60,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-<<<<<<< HEAD
         if (telemetry == null) return;
-=======
+
         LLResult result = getLatestLimelightResult();
         boolean valid = result != null && result.isValid();
->>>>>>> 742c1e81d17c5285303cfe629ce2605abe2f53b7
 
         telemetry.addLine("");
         telemetry.addLine("Intake/Storage");
