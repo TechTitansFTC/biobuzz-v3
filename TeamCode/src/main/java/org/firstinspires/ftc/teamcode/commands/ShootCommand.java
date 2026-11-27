@@ -9,8 +9,8 @@ import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 @Configurable
 public class ShootCommand extends CommandBase {
     public static double SHOOTING_TIME = 0.7;
-    public static double GATE_OPEN_POSITION = 0.3;
-    public static double GATE_CLOSE_POSITION = 0.6;
+    public static double GATE_OPEN_POSITION = 0.7;
+    public static double GATE_CLOSE_POSITION = 0.94;
     private final GateSubsystem gateSubsystem;
     private final ElapsedTime shootTimer;
     public ShootCommand(GateSubsystem gateSubsystem) {

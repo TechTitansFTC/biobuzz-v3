@@ -8,8 +8,8 @@ import org.firstinspires.ftc.teamcode.subsystems.FlowerSubsystem;
 @Configurable
 public class FlowerIntakeCommand extends CommandBase {
     private final FlowerSubsystem flowerSubsystem;
-    public static double FLOWER_SERVO_DOWN = 0.2;
-    public static double FLOWER_SERVO_UP = 0.5;
+    public static double FLOWER_SERVO_DOWN = 0.5;
+    public static double FLOWER_SERVO_UP = 0.2;
     public FlowerIntakeCommand(FlowerSubsystem flowerSubsystem) {
         this.flowerSubsystem = flowerSubsystem;
 

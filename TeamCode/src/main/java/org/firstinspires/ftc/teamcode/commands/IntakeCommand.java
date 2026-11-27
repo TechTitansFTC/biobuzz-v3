@@ -10,9 +10,10 @@ import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 public class IntakeCommand extends CommandBase {
     public static double INTAKE_MOTOR_POWER = 1;
     public static double LEFT_INTAKE_PIVOT_SERVO_DOWN_POSITION = 0.6;
-    public static double RIGHT_INTAKE_PIVOT_SERVO_DOWN_POSITION = 0.4;
-    public static double LEFT_INTAKE_PIVOT_SERVO_UP_POSITION = 0.4;
-    public static double RIGHT_INTAKE_PIVOT_SERVO_UP_POSITION = 0.6;
+    public static double RIGHT_INTAKE_PIVOT_SERVO_DOWN_POSITION = 0.55;
+    public static double LEFT_INTAKE_PIVOT_SERVO_UP_POSITION = 0.8;
+    public static double RIGHT_INTAKE_PIVOT_SERVO_UP_POSITION = 0.8;
+    public static double RIGHT_INTAKE_PIVOT_SERVO_MIDDLE_POSITION = 0.63;
     public static double INTAKE_PIVOT_UP_BUFFER_TIME = 0.25;
     public static boolean USE_SENSOR4_ONLY = true;
     private final IntakeSubsystem intakeSubsystem;

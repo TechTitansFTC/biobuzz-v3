@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -17,9 +18,9 @@ public class MecanumDriveSubsystem extends SubsystemBase {
     public static RevHubOrientationOnRobot.LogoFacingDirection CONTROL_HUB_LOGO_FACING_DIRECTION = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
     public static RevHubOrientationOnRobot.UsbFacingDirection CONTROL_HUB_USB_FACING_DIRECTION = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
-    private final Telemetry telemetry;
+    private final TelemetryManager telemetry;
 
-    public MecanumDriveSubsystem(HardwareMap hardwareMap, IMU imu, Telemetry telemetry) {
+    public MecanumDriveSubsystem(HardwareMap hardwareMap, IMU imu, TelemetryManager telemetry) {
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft"); // port 0 motor control hub
         frontRight = hardwareMap.get(DcMotor.class, "frontRight"); // port 3 motor control hub
         backLeft = hardwareMap.get(DcMotor.class, "backLeft"); // port 1 motor control hub
@@ -40,6 +41,8 @@ public class MecanumDriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        telemetry.addLine("");
+        telemetry.addLine("Drive");
         telemetry.addData("backLeftMotorPower", getBackLeftMotorPower());
         telemetry.addData("backRightMotorPower", getBackRightMotorPower());
         telemetry.addData("frontLeftMotorPower", getFrontLeftMotorPower());

@@ -59,7 +59,7 @@ public class TeleOp extends OpMode {
         follower.setPose(autonomousEndPose);
 
         // Subsystems
-        mecanumDriveSubsystem = new MecanumDriveSubsystem(hardwareMap,imu,telemetry);
+        mecanumDriveSubsystem = new MecanumDriveSubsystem(hardwareMap,imu,telemetryManager);
         intakeSubsystem = new IntakeSubsystem(hardwareMap, telemetryManager);
         scoringSubsystem = new ScoringSubsystem(hardwareMap, telemetryManager);
         flowerSubsystem = new FlowerSubsystem(hardwareMap, telemetryManager);
@@ -101,7 +101,7 @@ public class TeleOp extends OpMode {
     public void loop () {
         CommandScheduler.getInstance().run();
         follower.update();
-        telemetry.update();
+        telemetryManager.update();
         gamepadEx.readButtons();
     }
 

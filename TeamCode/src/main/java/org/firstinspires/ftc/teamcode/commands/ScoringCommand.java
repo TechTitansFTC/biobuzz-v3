@@ -18,10 +18,10 @@ public class ScoringCommand extends CommandBase {
     public static double POLLEN_TURRET_SERVO_CONTROLLER_KI = 0.0;
     public static double POLLEN_TURRET_SERVO_CONTROLLER_KD = 0.0000004;
     public static double POLLEN_TURRET_SERVO_CONTROLLER_KF = 0.06;
-    public static double POLLEN_SHOOTER_SERVO_CONTROLLER_KP = 0.001;
-    public static double POLLEN_SHOOTER_SERVO_CONTROLLER_KI = 0.0;
-    public static double POLLEN_SHOOTER_SERVO_CONTROLLER_KD = 0.004;
-    public static double POLLEN_SHOOTER_SERVO_CONTROLLER_KF = 0.06;
+    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KP = 0.001;
+    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KI = 0.0;
+    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KD = 0.004;
+    public static double POLLEN_SHOOTER_MOTOR_CONTROLLER_KF = 0.06;
     public static double TARGET_X_RED = 55.5;
     public static double TARGET_X_BLUE = 84;
     public static double TARGET_Y_DOWN = 55;
@@ -63,8 +63,8 @@ public class ScoringCommand extends CommandBase {
 
         pollenTurretServoController = new PIDController(POLLEN_TURRET_SERVO_CONTROLLER_KP, POLLEN_TURRET_SERVO_CONTROLLER_KI,
                 POLLEN_TURRET_SERVO_CONTROLLER_KD, POLLEN_TURRET_SERVO_CONTROLLER_KF);
-        pollenTurretMotorController = new PIDController(POLLEN_SHOOTER_SERVO_CONTROLLER_KP, POLLEN_SHOOTER_SERVO_CONTROLLER_KI,
-                POLLEN_SHOOTER_SERVO_CONTROLLER_KD, POLLEN_SHOOTER_SERVO_CONTROLLER_KF);
+        pollenTurretMotorController = new PIDController(POLLEN_SHOOTER_MOTOR_CONTROLLER_KP, POLLEN_SHOOTER_MOTOR_CONTROLLER_KI,
+                POLLEN_SHOOTER_MOTOR_CONTROLLER_KD, POLLEN_SHOOTER_MOTOR_CONTROLLER_KF);
 
         addRequirements(scoringSubsystem);
     }
@@ -79,8 +79,8 @@ public class ScoringCommand extends CommandBase {
     public void execute() {
         pollenTurretServoController.setConstants(POLLEN_TURRET_SERVO_CONTROLLER_KP, POLLEN_TURRET_SERVO_CONTROLLER_KI,
                 POLLEN_TURRET_SERVO_CONTROLLER_KD, POLLEN_TURRET_SERVO_CONTROLLER_KF);
-        pollenTurretMotorController.setConstants(POLLEN_SHOOTER_SERVO_CONTROLLER_KP, POLLEN_SHOOTER_SERVO_CONTROLLER_KI,
-                POLLEN_SHOOTER_SERVO_CONTROLLER_KD, POLLEN_SHOOTER_SERVO_CONTROLLER_KF);
+        pollenTurretMotorController.setConstants(POLLEN_SHOOTER_MOTOR_CONTROLLER_KP, POLLEN_SHOOTER_MOTOR_CONTROLLER_KI,
+                POLLEN_SHOOTER_MOTOR_CONTROLLER_KD, POLLEN_SHOOTER_MOTOR_CONTROLLER_KF);
 
         scoringSubsystem.setPosition(follower.pose());
         double currX = scoringSubsystem.getCurrX();

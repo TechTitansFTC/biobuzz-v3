@@ -27,10 +27,10 @@ public class IntakeSubsystem extends SubsystemBase {
         intakeMotor = hardwareMap.get(DcMotor.class, "intake"); // port 1 motor expansion hub
         transferMotor = hardwareMap.get(DcMotor.class, "transfer"); // port 0 motor expansion hub
 
-        sensor1 = hardwareMap.get(DigitalChannel.class, "sensor1");
-        sensor2 = hardwareMap.get(DigitalChannel.class, "sensor2");
-        sensor3 = hardwareMap.get(DigitalChannel.class, "sensor3");
-        sensor4 = hardwareMap.get(DigitalChannel.class, "sensor4");
+        sensor1 = hardwareMap.get(DigitalChannel.class, "sensor1"); // port 0 digital expansion hub
+        sensor2 = hardwareMap.get(DigitalChannel.class, "sensor2"); // port 2 digital expansion hub
+        sensor3 = hardwareMap.get(DigitalChannel.class, "sensor3"); // port 4 digital expansion hub
+        sensor4 = hardwareMap.get(DigitalChannel.class, "sensor4"); // port 6 digital expansion hub
 
         leftIntakePivotServo = hardwareMap.get(Servo.class, "leftIntakePivot"); //
         rightIntakePivotServo = hardwareMap.get(Servo.class, "rightIntakePivot"); // port 5 servo expansion hub
@@ -50,6 +50,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        if (telemetry == null) return;
+
         telemetry.addLine("");
         telemetry.addLine("Intake/Storage");
         telemetry.addData("Intake Motor Power", getMotorPower());
@@ -104,6 +106,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public double getMotorPower() {
+        if (intakeMotor == null) return -1;
         return intakeMotor.getPower();
     }
 }

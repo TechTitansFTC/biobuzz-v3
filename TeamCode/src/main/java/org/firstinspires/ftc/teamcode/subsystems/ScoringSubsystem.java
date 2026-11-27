@@ -36,7 +36,8 @@ public class ScoringSubsystem extends SubsystemBase {
     public static boolean LEFT_POLLEN_TURRET_MOTOR_REVERSED = true;
     public static boolean POLLEN_TURRET_CAMERA_REVERSED = true;
     public static double POLLEN_SHOOTER_RPM_FILTER = 0.3;
-    public static double ENCODER_TO_TURRET_RATIO = 2.75;
+    public static double ENCODER_TO_TURRET_RATIO = 1.1636;
+    public static boolean REVERSE_TURRET_ENCODER_DIRECTION = true;
 
     private final DcMotorEx rightPollenTurretMotor;
     private final DcMotorEx leftPollenTurretMotor;
@@ -59,12 +60,12 @@ public class ScoringSubsystem extends SubsystemBase {
     public ScoringSubsystem(HardwareMap hardwareMap, TelemetryManager telemetry) {
         this.telemetry = telemetry;
 
-        rightPollenTurretMotor = hardwareMap.get(DcMotorEx.class, "rightPollenShooter");
+        rightPollenTurretMotor = hardwareMap.get(DcMotorEx.class, "rightPollenShooter"); // expansion hub motor 2
         leftPollenTurretMotor = hardwareMap.get(DcMotorEx.class, "leftPollenShooter");
-        pollenTurretServo = hardwareMap.get(CRServo.class, "pollenTurret");
+        pollenTurretServo = hardwareMap.get(CRServo.class, "pollenTurret"); // control hub servo 5
         hoodServo = hardwareMap.get(Servo.class, "hood");
 
-        pollenTurretEncoder = hardwareMap.get(AnalogInput.class, "pollenEncoder");
+        pollenTurretEncoder = hardwareMap.get(AnalogInput.class, "pollenEncoder"); // control hub analog 0
 
         rightPollenTurretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftPollenTurretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -178,7 +179,10 @@ public class ScoringSubsystem extends SubsystemBase {
         // FORWARD WILL BE POSITIVE 180 degrees pleeeeeaase
         rawDegrees -= 180;
 
-        return rawDegrees * ENCODER_TO_TURRET_RATIO;
+        int reverse = 1;
+        if (POLLEN_TURRET_CAMERA_REVERSED) reverse = -1;
+
+        return reverse * rawDegrees * ENCODER_TO_TURRET_RATIO;
     }
 
     private void updateFilteredRPM() {

@@ -15,6 +15,8 @@ public class GateSubsystem extends SubsystemBase {
         servo = hardwareMap.get(Servo.class, "gate"); // expansion servo port 1
 
         this.telemetry = telemetry;
+
+        register();
     }
 
     @Override

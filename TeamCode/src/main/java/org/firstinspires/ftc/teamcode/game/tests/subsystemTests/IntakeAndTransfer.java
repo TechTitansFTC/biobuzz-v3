@@ -25,7 +25,7 @@ import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
 
 import org.firstinspires.ftc.teamcode.util.PoseStorage;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Intake and Transfer")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Intake and Transfer", group="Tests")
 public class IntakeAndTransfer extends OpMode {
     MecanumDriveSubsystem mecanumDriveSubsystem;
     IntakeSubsystem intakeSubsystem;
@@ -49,7 +49,7 @@ public class IntakeAndTransfer extends OpMode {
         gamepadEx = new GamepadEx(gamepad1);
 
         // Subsystems
-        mecanumDriveSubsystem = new MecanumDriveSubsystem(hardwareMap,imu,telemetry);
+        mecanumDriveSubsystem = new MecanumDriveSubsystem(hardwareMap,imu,telemetryManager);
         intakeSubsystem = new IntakeSubsystem(hardwareMap, telemetryManager);
         flowerSubsystem = new FlowerSubsystem(hardwareMap, telemetryManager);
         gateSubsystem = new GateSubsystem(hardwareMap, telemetryManager);
@@ -84,7 +84,7 @@ public class IntakeAndTransfer extends OpMode {
     @Override
     public void loop () {
         CommandScheduler.getInstance().run();
-        telemetry.update();
+        telemetryManager.update();
         gamepadEx.readButtons();
     }
 
